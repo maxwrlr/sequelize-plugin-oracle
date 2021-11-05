@@ -15,9 +15,10 @@ function install(force) {
 
 	// always update if version of this package changed
 	let isUpToDate = false;
+	let sourceVersion;
 	try {
+		sourceVersion = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version;
 		const targetVersion = fs.readFileSync(path.join(target, '.version'), 'utf8');
-		const sourceVersion = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version;
 		isUpToDate = sourceVersion === targetVersion;
 	} catch(exc) {
 	}
@@ -34,7 +35,9 @@ function install(force) {
 	}
 
 	// copy all files
-	fs.mkdirSync(target);
+	if(!fs.existsSync(target)) {
+		fs.mkdirSync(target);
+	}
 	for(const filename of fs.readdirSync(source)) {
 		fs.copyFileSync(path.join(source, filename), path.join(target, filename));
 	}
@@ -50,6 +53,9 @@ function install(force) {
 		'dialectMap.mariadb',
 		'dialectMap.oracle = require(\'./dialects/oracle/data-types\')(DataTypes);'
 	);
+
+	// commit
+	fs.writeFileSync(path.join(target, '.version'), sourceVersion, 'utf8')
 }
 
 install();
