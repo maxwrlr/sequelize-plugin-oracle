@@ -25,6 +25,12 @@ class OracleConnectionManager extends AbstractConnectionManager {
 					} else {
 						this.lib.fetchAsString = [this.lib.CLOB];
 					}
+
+					if(dialectOptions && 'fetchAsBuffer' in dialectOptions) {
+						this.lib.fetchAsBuffer = sequelize.config.dialectOptions.fetchAsBuffer;
+					} else {
+						this.lib.fetchAsBuffer = [this.lib.BLOB];
+					}
 				}
 			}
 		} catch(err) {

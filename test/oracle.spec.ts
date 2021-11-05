@@ -16,9 +16,16 @@ beforeAll(() => {
 	);
 
 	Testing = sequelize.define('testing', {
-		name: {
+		name:  {
 			type:       DataTypes.STRING,
 			primaryKey: true
+		},
+		value: {
+			type:         DataTypes.NUMBER,
+			defaultValue: 123
+		},
+		bin:   {
+			type: DataTypes.BLOB
 		}
 	});
 });
@@ -31,21 +38,33 @@ describe('create a table and make some queries', () => {
 	});
 
 	it('should insert a row', async() => {
-		const data = { name: 'Hello World!' };
+		const data = {
+			name: 'Hello World!',
+			bin:  Buffer.from('foo', 'utf8')
+		};
+
 		await Testing.create(data);
 		const result = await Testing.findAll();
+
+		// test default value
+		(data as any).value = 123;
 		expect(result).toContainEqual(expect.objectContaining(data));
 	});
 
 	it('should update a row', async() => {
-		const data = { name: 'Good Bye!' };
+		const data = {
+			name:  'Good Bye!',
+			value: 234,
+			bin:   Buffer.from('bar', 'utf8')
+		};
+
 		await Testing.update(data, { where: { name: 'Hello World!' } });
 		const result = await Testing.findAll();
 		expect(result).toContainEqual(expect.objectContaining(data));
 	});
 
-	// it('should drop the table', async() => {
-	// 	await Testing.drop();
-	// 	await expect(Testing.findAll()).toThrow();
-	// });
+	it('should drop the table', async() => {
+		await Testing.drop();
+		await expect(Testing.findAll()).rejects.toThrow();
+	});
 });

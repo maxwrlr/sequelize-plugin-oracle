@@ -1,8 +1,12 @@
 {
+	"version": "6.0.0",
 	"author": "maxwrlr",
 	"description": "Oracle dialect for sequelize",
 	"license": "MIT",
 	"repository": "https://github.com/maxwrlr/sequelize-plugin-oracle",
+	"scripts": {
+		"test": "jest"
+	},
 	"files": [
 		"index.js",
 		"oracle"
