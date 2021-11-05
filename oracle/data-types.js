@@ -139,6 +139,10 @@ module.exports = BaseTypes => {
 		_stringify() {
 			return 'SELECT TO_CHAR(SYSDATE, \'YYYY-MM-DD HH24:MI:SS\') "NOW" FROM DUAL;';
 		}
+
+		_bindParam() {
+			return this._stringify()
+		}
 	}
 
 	class TIME extends BaseTypes.TIME {
@@ -172,6 +176,10 @@ module.exports = BaseTypes => {
 			const formatedDate = momentDate.format('HH:mm:ss.SSS Z');
 			return `TO_TIMESTAMP_TZ('${formatedDate}','${format}')`;
 		}
+
+		_bindParam(value, options) {
+			return this._stringify(value, options)
+		}
 	}
 
 	class DATE extends BaseTypes.DATE {
@@ -200,6 +208,10 @@ module.exports = BaseTypes => {
 				const formatedDate = date.format('YYYY-MM-DD HH:mm:ss.SSS Z');
 				return `TO_TIMESTAMP_TZ('${formatedDate}','${format}')`;
 			}
+		}
+
+		_bindParam(value, options) {
+			return this._stringify(value, options)
 		}
 	}
 
@@ -307,6 +319,10 @@ module.exports = BaseTypes => {
 		_stringify(date) {
 			const format = 'YYYY/MM/DD';
 			return `TO_DATE('${date}','${format}')`;
+		}
+
+		_bindParam(value) {
+			return this._stringify(value)
 		}
 	}
 
