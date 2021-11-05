@@ -15,9 +15,6 @@ jobs:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - run: npm install
-      - run: npm run build
-
       - name: Sync package.json
         run: |
           sudo apt-get install jq
