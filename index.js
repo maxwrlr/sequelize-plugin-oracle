@@ -13,13 +13,22 @@ function install(force) {
 	const target = path.join(sequelizeDir, 'lib/dialects/oracle');
 	const source = path.join(__dirname, 'oracle');
 
+	// always update if version of this package changed
+	let isUpToDate = false;
+	try {
+		const targetVersion = fs.readFileSync(path.join(target, '.version'), 'utf8');
+		const sourceVersion = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version;
+		isUpToDate = sourceVersion === targetVersion;
+	} catch(exc) {
+	}
+
 	if(force) {
 		// for testing
 		try {
 			require('fs-extra').removeSync(target);
 		} catch(exc) {
 		}
-	} else if(fs.existsSync(target)) {
+	} else if(isUpToDate && fs.existsSync(target)) {
 		// don't copy if already copied
 		return;
 	}
@@ -40,7 +49,7 @@ function install(force) {
 		path.join(sequelizeDir, 'lib/data-types.js'),
 		'dialectMap.mariadb',
 		'dialectMap.oracle = require(\'./dialects/oracle/data-types\')(DataTypes);'
-	)
+	);
 }
 
 install();
