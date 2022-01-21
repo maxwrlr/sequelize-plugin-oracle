@@ -3,7 +3,16 @@ const path = require('path');
 
 function paste(filepath, reference, fragment) {
 	let content = fs.readFileSync(filepath, 'utf8');
-	const index = content.indexOf(reference);
+	const index = Array.isArray(reference)
+		? reference.reduce((i, r) => i >= 0 ? i : content.indexOf(r), -1)
+		: content.indexOf(reference);
+
+	if(index < 0) {
+		console.error('Failed to install oracle dialect.');
+		process.exit();
+		return;
+	}
+
 	content = content.substr(0, index) + fragment + content.substr(index);
 	fs.writeFileSync(filepath, content, 'utf8');
 }
@@ -45,7 +54,7 @@ function install(force) {
 	// make sure oracle dialect wil be required
 	paste(
 		path.join(sequelizeDir, 'lib/sequelize.js'),
-		'case \'mariadb\':',
+		['case \'mariadb\':', 'case "mariadb":'],
 		'case \'oracle\': Dialect = require(\'./dialects/oracle\'); break;'
 	);
 	paste(
@@ -55,7 +64,7 @@ function install(force) {
 	);
 
 	// commit
-	fs.writeFileSync(path.join(target, '.version'), sourceVersion, 'utf8')
+	fs.writeFileSync(path.join(target, '.version'), sourceVersion, 'utf8');
 }
 
 install();
