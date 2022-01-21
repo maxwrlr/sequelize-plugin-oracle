@@ -799,19 +799,19 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 		return _.template(allQueries.join(';'))(replacements);
 	}
 
+	truncateTableQuery(tableName, options = {}) {
+		return `TRUNCATE TABLE ${this.quoteTable(tableName)}`;
+	}
+
 	/**
 	 * return a delete query
 	 */
 	deleteQuery(tableName, where, options) {
 		options = options || {};
-		const table = tableName;
-		if(options.truncate === true) {
-			// Truncate does not allow LIMIT and WHERE
-			return 'TRUNCATE TABLE ' + table;
-		}
+
 		where = this.getWhereConditions(where);
 		const replacements = {
-			table: this.quoteTable(table),
+			table: this.quoteTable(tableName),
 			limit: options.limit,
 			where
 		};

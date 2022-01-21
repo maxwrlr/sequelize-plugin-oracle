@@ -63,6 +63,11 @@ describe('create a table and make some queries', () => {
 		expect(result).toContainEqual(expect.objectContaining(data));
 	});
 
+	it('should truncate the table', async() => {
+		await Testing.destroy({ where: {}, truncate: true });
+		await expect(Testing.findAll()).resolves.toHaveLength(0);
+	});
+
 	it('should drop the table', async() => {
 		await Testing.drop();
 		await expect(Testing.findAll()).rejects.toThrow();
