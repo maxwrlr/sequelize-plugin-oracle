@@ -1,7 +1,7 @@
 {
 	"name": "sequelize-plugin-oracle",
 	"description": "Oracle dialect for sequelize",
-	"version": "6.0.0",
+	"version": "",
 	"author": "maxwrlr",
 	"license": "MIT",
 	"repository": "https://github.com/maxwrlr/sequelize-plugin-oracle",
