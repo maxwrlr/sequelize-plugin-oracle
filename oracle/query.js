@@ -201,6 +201,12 @@ class OracleQuery extends AbstractQuery {
 				} else {
 					sqlToExec = self.sql;
 				}
+
+				// fix authentication query
+				if(/^select +[0-9 +]+ +as +[a-z]+$/i.test(sqlToExec)) {
+					sqlToExec += ' from dual';
+				}
+
 				return connection.execute(sqlToExec, [], {
 					outFormat: self.outFormat,
 					autoCommit: self.autoCommit
