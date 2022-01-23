@@ -141,7 +141,7 @@ module.exports = BaseTypes => {
 		}
 
 		_bindParam() {
-			return this._stringify()
+			return this._stringify();
 		}
 	}
 
@@ -178,7 +178,7 @@ module.exports = BaseTypes => {
 		}
 
 		_bindParam(value, options) {
-			return this._stringify(value, options)
+			return this._stringify(value, options);
 		}
 	}
 
@@ -211,7 +211,7 @@ module.exports = BaseTypes => {
 		}
 
 		_bindParam(value, options) {
-			return this._stringify(value, options)
+			return this._stringify(value, options);
 		}
 	}
 
@@ -322,7 +322,7 @@ module.exports = BaseTypes => {
 		}
 
 		_bindParam(value) {
-			return this._stringify(value)
+			return this._stringify(value);
 		}
 	}
 
