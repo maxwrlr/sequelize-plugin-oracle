@@ -221,7 +221,6 @@ class OracleQuery extends AbstractQuery {
 					const formatedResult = self.formatResults(result);
 					return formatedResult === undefined ? {} : formatedResult;
 				}).catch(error => {
-					const a = sqlToExec;
 					throw self.formatError(error);
 				});
 			}
