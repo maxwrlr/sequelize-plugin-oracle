@@ -53,7 +53,7 @@ describe('create a table and make some queries', () => {
 
 	it('should update a row', async() => {
 		const data = {
-			name:  'Good Bye!',
+			name:  'Thanks for escaping \', \0, " and `.',
 			value: 234,
 			bin:   Buffer.from('bar', 'utf8')
 		};

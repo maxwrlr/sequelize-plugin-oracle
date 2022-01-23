@@ -2,7 +2,13 @@ const fs = require('fs');
 const path = require('path');
 
 function paste(filepath, reference, fragment) {
-	let content = fs.readFileSync(filepath, 'utf8');
+	// backup file for future updates on original file
+	const backupFile = filepath + '.original';
+	if(!fs.existsSync(backupFile)) {
+		fs.copyFileSync(filepath, backupFile);
+	}
+
+	let content = fs.readFileSync(backupFile, 'utf8');
 	const index = Array.isArray(reference)
 		? reference.reduce((i, r) => i >= 0 ? i : content.indexOf(r), -1)
 		: content.indexOf(reference);
@@ -17,7 +23,8 @@ function paste(filepath, reference, fragment) {
 	fs.writeFileSync(filepath, content, 'utf8');
 }
 
-function install(force) {
+function installFiles(force) {
+	// make file amendments
 	const sequelizeDir = path.dirname(require.resolve('sequelize'));
 	const target = path.join(sequelizeDir, 'lib/dialects/oracle');
 	const source = path.join(__dirname, 'oracle');
@@ -55,16 +62,36 @@ function install(force) {
 	paste(
 		path.join(sequelizeDir, 'lib/sequelize.js'),
 		['case \'mariadb\':', 'case "mariadb":'],
-		'case \'oracle\': Dialect = require(\'./dialects/oracle\'); break;'
+		'case \'oracle\': Dialect = require(\'./dialects/oracle\'); break;\n'
 	);
 	paste(
 		path.join(sequelizeDir, 'lib/data-types.js'),
 		'dialectMap.mariadb',
-		'dialectMap.oracle = require(\'./dialects/oracle/data-types\')(DataTypes);'
+		'dialectMap.oracle = require(\'./dialects/oracle/data-types\')(DataTypes);\n'
 	);
 
 	// commit
 	fs.writeFileSync(path.join(target, '.version'), sourceVersion, 'utf8');
+}
+
+/**
+ * Make run-time adjustments. Unfortunately, that's not always easily possible.
+ */
+function installRuntime() {
+	// Install Oracle String escape
+	const SqlString = require('sequelize/lib/sql-string');
+	const originalEscape = SqlString.escape;
+	SqlString.escape = function(val, timeZone, dialect, format) {
+		if(dialect === 'oracle' && typeof val === 'string') {
+			return `'${val.replace(/'/g, `''`)}'`;
+		}
+		return originalEscape(val, timeZone, dialect, format);
+	};
+}
+
+function install(force) {
+	installFiles(force);
+	installRuntime();
 }
 
 install();
