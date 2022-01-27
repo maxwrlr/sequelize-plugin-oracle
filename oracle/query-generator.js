@@ -533,8 +533,12 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 	 * Override of upsertQuery, Oracle specific
 	 * Using PL/SQL for finding the row
 	 */
-	upsertQuery(tableName, insertValues, updateValues, where, model, options) {
-		const rawAttributes = model.rawAttributes;
+	upsertQuery(tableName, insertValues, updateValues, where, modelAttributes, options) {
+		let {
+			query: updateQuery,
+			bind
+		} = this.updateQuery(tableName, updateValues, where, options, modelAttributes);
+
 		const sql = [
 			'DECLARE ',
 			'CURSOR findingRow IS ',
@@ -546,16 +550,20 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 			'OPEN findingRow; ',
 			'FETCH findingRow INTO firstRow; ',
 			'IF findingRow%FOUND THEN ',
-			this.updateQuery(tableName, updateValues, where, options, rawAttributes),
+			updateQuery,
 			'; $:isUpdate;NUMBER$ := 2; ',
 			'ELSE ',
-			this.insertQuery(tableName, insertValues, rawAttributes, options),
+			this.insertQuery(tableName, insertValues, modelAttributes, options),
 			'; $:isUpdate;NUMBER$ := 1; ',
 			'END IF; ',
 			'CLOSE findingRow; ',
 			'END;'
 		];
-		return sql.join('');
+
+		return {
+			query: sql.join(''),
+			bind
+		};
 	}
 
 	/*
@@ -563,6 +571,16 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 	*/
 	insertQuery(table, valueHash, modelAttributes, options) {
 		options = options || {};
+
+		if(options.updateOnDuplicate) {
+			const where = Object.fromEntries(
+				Object.entries(valueHash).filter(([k]) => options.upsertKeys.includes(k))
+			);
+
+			options.updateOnDuplicate = false;
+			return this.upsertQuery(table, valueHash, valueHash, where, options);
+		}
+
 		_.defaults(options, this.options);
 		const valueQuery = 'INSERT INTO <%= table %> (<%= attributes %>) VALUES (<%= values %>)';
 		const emptyQuery = 'INSERT INTO <%= table %> VALUES (DEFAULT)';

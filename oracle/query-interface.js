@@ -8,6 +8,15 @@ const query_interface_1 = require('../abstract/query-interface');
  */
 class OracleQueryInterface extends query_interface_1.QueryInterface {
 	/**
+	 * @override
+	 */
+	async upsert(tableName, insertValues, updateValues, where, options) {
+		const result = await super.upsert(tableName, insertValues, updateValues, where, options);
+		// TODO I guess that should be a model
+		return [{ wasUpdate: result === 2 }];
+	}
+
+	/**
 	 * A wrapper that fixes Oracle's inability to cleanly drop constraints on multiple tables if the calls are made at the same time
 	 * @param options
 	 */

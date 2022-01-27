@@ -63,6 +63,17 @@ describe('create a table and make some queries', () => {
 		expect(result).toContainEqual(expect.objectContaining(data));
 	});
 
+	it('should upsert a row', async() => {
+		const data = {
+			name:  'Thanks for escaping \', " and `.',
+			value: 567,
+		};
+
+		await Testing.upsert(data);
+		const result = await Testing.findAll();
+		expect(result).toContainEqual(expect.objectContaining(data));
+	});
+
 	it('should truncate the table', async() => {
 		await Testing.destroy({ where: {}, truncate: true });
 		await expect(Testing.findAll()).resolves.toHaveLength(0);

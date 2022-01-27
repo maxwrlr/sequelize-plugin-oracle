@@ -80,10 +80,16 @@ function installFiles(force) {
 function installRuntime() {
 	// Install Oracle String escape
 	const SqlString = require('sequelize/lib/sql-string');
+	const dataTypes = require('sequelize/lib/data-types');
 	const originalEscape = SqlString.escape;
 	SqlString.escape = function(val, timeZone, dialect, format) {
-		if(dialect === 'oracle' && typeof val === 'string') {
-			return `'${val.replace(/'/g, `''`)}'`;
+		if(dialect === 'oracle') {
+			if(typeof val === 'string') {
+				return `'${val.replace(/'/g, `''`)}'`;
+			}
+			if(val instanceof Date) {
+				return dataTypes[dialect].DATE.prototype.stringify(val, { timezone: timeZone });
+			}
 		}
 		return originalEscape(val, timeZone, dialect, format);
 	};
