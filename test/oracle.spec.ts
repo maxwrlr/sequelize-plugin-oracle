@@ -47,7 +47,7 @@ describe('create a table and make some queries', () => {
 		const result = await Testing.findAll();
 
 		// test default value
-		(data as any).value = 123;
+		(data as any).value = Testing.rawAttributes.value.defaultValue;
 		expect(result).toContainEqual(expect.objectContaining(data));
 	});
 
