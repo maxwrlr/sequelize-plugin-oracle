@@ -65,8 +65,8 @@ describe('create a table and make some queries', () => {
 
 	it('should upsert a row', async() => {
 		const data = {
-			name:  'Thanks for escaping \', " and `.',
-			value: 567,
+			name:  'Thanks for escaping \', \0, " and `.',
+			value: 567
 		};
 
 		await Testing.upsert(data);

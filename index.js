@@ -85,7 +85,7 @@ function installRuntime() {
 	SqlString.escape = function(val, timeZone, dialect, format) {
 		if(dialect === 'oracle') {
 			if(typeof val === 'string') {
-				return `'${val.replace(/'/g, `''`)}'`;
+				return val.split(/(\0)/g).map(v => v === '\0' ? 'chr(0)' : `'${v.replace(/'/g, `''`)}'`).join('||');
 			}
 			if(val instanceof Date) {
 				return dataTypes[dialect].DATE.prototype.stringify(val, { timezone: timeZone });
