@@ -1,12 +1,11 @@
 import {install} from '..';
+import * as fs from 'fs';
+import {DataTypes, ModelStatic, Sequelize} from 'sequelize';
 
 install(true);
 
-import * as fs from 'fs';
-import {DataTypes, ModelCtor, Sequelize} from 'sequelize';
-
 let sequelize: Sequelize;
-let Testing: ModelCtor<any>;
+let Testing: ModelStatic<any>;
 
 jest.setTimeout(100_000);
 
@@ -58,7 +57,7 @@ describe('create a table and make some queries', () => {
 
 	it('should update a row', async() => {
 		const data = {
-			name:  'Thanks for escaping \', \0, " and `.',
+			name:  'Thanks for escaping \', ' + String.fromCharCode(0) + ', " and `.',
 			value: 234,
 			works: true,
 			bin:   Buffer.from('bar', 'utf8')
@@ -71,7 +70,7 @@ describe('create a table and make some queries', () => {
 
 	it('should upsert a row', async() => {
 		const data = {
-			name:  'Thanks for escaping \', \0, " and `.',
+			name:  'Thanks for escaping \', ' + String.fromCharCode(0) + ', " and `.',
 			value: 567
 		};
 
