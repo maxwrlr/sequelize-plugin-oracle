@@ -16,15 +16,19 @@ beforeAll(() => {
 	);
 
 	Testing = sequelize.define('testing', {
-		name:  {
+		name:   {
 			type:       DataTypes.STRING,
 			primaryKey: true
 		},
-		value: {
+		value:  {
 			type:         DataTypes.NUMBER,
 			defaultValue: 123
 		},
-		bin:   {
+		works: {
+			type:         DataTypes.BOOLEAN,
+			defaultValue: false
+		},
+		bin:    {
 			type: DataTypes.BLOB
 		}
 	});
@@ -48,6 +52,7 @@ describe('create a table and make some queries', () => {
 
 		// test default value
 		(data as any).value = Testing.rawAttributes.value.defaultValue;
+		(data as any).works = Testing.rawAttributes.works.defaultValue;
 		expect(result).toContainEqual(expect.objectContaining(data));
 	});
 
@@ -55,6 +60,7 @@ describe('create a table and make some queries', () => {
 		const data = {
 			name:  'Thanks for escaping \', \0, " and `.',
 			value: 234,
+			works: true,
 			bin:   Buffer.from('bar', 'utf8')
 		};
 

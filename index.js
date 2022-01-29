@@ -87,6 +87,9 @@ function installRuntime() {
 			if(typeof val === 'string') {
 				return val.split(/(\0)/g).map(v => v === '\0' ? 'chr(0)' : `'${v.replace(/'/g, `''`)}'`).join('||');
 			}
+			if(typeof val === 'boolean') {
+				return val ? '1' : '0';
+			}
 			if(val instanceof Date) {
 				return dataTypes[dialect].DATE.prototype.stringify(val, { timezone: timeZone });
 			}
