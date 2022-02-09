@@ -26,7 +26,7 @@ function paste(filepath, reference, fragment) {
 function installFiles(force) {
 	// make file amendments
 	const sequelizeDir = path.dirname(require.resolve('sequelize'));
-	const target = path.join(sequelizeDir, 'lib/dialects/oracle');
+	const target = path.join(sequelizeDir, 'dialects/oracle');
 	const source = path.join(__dirname, 'oracle');
 
 	// always update if version of this package changed
@@ -60,12 +60,12 @@ function installFiles(force) {
 
 	// make sure oracle dialect wil be required
 	paste(
-		path.join(sequelizeDir, 'lib/sequelize.js'),
+		path.join(sequelizeDir, 'sequelize.js'),
 		['case \'mariadb\':', 'case "mariadb":'],
 		'case \'oracle\': Dialect = require(\'./dialects/oracle\'); break;\n'
 	);
 	paste(
-		path.join(sequelizeDir, 'lib/data-types.js'),
+		path.join(sequelizeDir, 'data-types.js'),
 		'dialectMap.mariadb',
 		'dialectMap.oracle = require(\'./dialects/oracle/data-types\')(DataTypes);\n'
 	);
@@ -79,8 +79,8 @@ function installFiles(force) {
  */
 function installRuntime() {
 	// Install Oracle String escape
-	const SqlString = require('sequelize/dist/lib/sql-string');
-	const dataTypes = require('sequelize/dist/lib/data-types');
+	const SqlString = require('sequelize/lib/sql-string');
+	const dataTypes = require('sequelize/lib/data-types');
 	const originalEscape = SqlString.escape;
 	SqlString.escape = function(val, timeZone, dialect, format) {
 		if(dialect === 'oracle') {
