@@ -186,7 +186,7 @@ module.exports = BaseTypes => {
 		constructor() {
 			super(...arguments);
 			this.escape = false;
-			this.noTimezone = 'oracle' in Globals.dialectOptions && 'noTimezone' in Globals.dialectOptions['oracle'] ? Globals.dialectOptions['oracle']['noTimezone'] : false;
+			this.noTimezone = Globals.dialectOptions && 'oracle' in Globals.dialectOptions && 'noTimezone' in Globals.dialectOptions['oracle'] ? Globals.dialectOptions['oracle']['noTimezone'] : false;
 		}
 
 		toSql() {

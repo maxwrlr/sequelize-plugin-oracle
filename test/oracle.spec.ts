@@ -15,11 +15,11 @@ beforeAll(() => {
 	);
 
 	Testing = sequelize.define('testing', {
-		name:   {
+		name:  {
 			type:       DataTypes.STRING,
 			primaryKey: true
 		},
-		value:  {
+		value: {
 			type:         DataTypes.NUMBER,
 			defaultValue: 123
 		},
@@ -27,7 +27,10 @@ beforeAll(() => {
 			type:         DataTypes.BOOLEAN,
 			defaultValue: false
 		},
-		bin:    {
+		date:  {
+			type: DataTypes.DATE
+		},
+		bin:   {
 			type: DataTypes.BLOB
 		}
 	});
@@ -43,7 +46,8 @@ describe('create a table and make some queries', () => {
 	it('should insert a row', async() => {
 		const data = {
 			name: 'Hello World!',
-			bin:  Buffer.from('foo', 'utf8')
+			bin:  Buffer.from('foo', 'utf8'),
+			date: new Date()
 		};
 
 		await Testing.create(data);
@@ -60,6 +64,7 @@ describe('create a table and make some queries', () => {
 			name:  'Thanks for escaping \', ' + String.fromCharCode(0) + ', " and `.',
 			value: 234,
 			works: true,
+			date:  new Date(),
 			bin:   Buffer.from('bar', 'utf8')
 		};
 
