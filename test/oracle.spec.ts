@@ -23,7 +23,7 @@ beforeAll(() => {
 			type:         DataTypes.NUMBER,
 			defaultValue: 123
 		},
-		works: {
+		isUp:  {
 			type:         DataTypes.BOOLEAN,
 			defaultValue: false
 		},
@@ -55,7 +55,7 @@ describe('create a table and make some queries', () => {
 
 		// test default value
 		(data as any).value = Testing.rawAttributes.value.defaultValue;
-		(data as any).works = Testing.rawAttributes.works.defaultValue;
+		(data as any).isUp = Testing.rawAttributes.isUp.defaultValue;
 		expect(result).toContainEqual(expect.objectContaining(data));
 	});
 
@@ -63,7 +63,7 @@ describe('create a table and make some queries', () => {
 		const data = {
 			name:  'Thanks for escaping \', ' + String.fromCharCode(0) + ', " and `.',
 			value: 234,
-			works: true,
+			isUp:  true,
 			date:  new Date(),
 			bin:   Buffer.from('bar', 'utf8')
 		};
