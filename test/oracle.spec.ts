@@ -84,6 +84,14 @@ describe('create a table and make some queries', () => {
 		expect(result).toContainEqual(expect.objectContaining(data));
 	});
 
+	it('should map aliases properly', async() => {
+		const result = await sequelize.getQueryInterface().select(null, Testing.tableName, <any>{
+			attributes: [['value', 'camelCase']]
+		});
+
+		await expect(result[0]).toEqual({ camelCase: 567 });
+	});
+
 	it('should truncate the table', async() => {
 		await Testing.destroy({ where: {}, truncate: true });
 		await expect(Testing.findAll()).resolves.toHaveLength(0);

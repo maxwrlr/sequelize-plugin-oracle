@@ -474,7 +474,22 @@ class OracleQuery extends AbstractQuery {
 									//We have a fieldMap for the names
 									outKey = this.options.fieldMap[rowKey.toLowerCase()];
 								} else {
-									outKey = rowKey.toLowerCase();
+									// if value was mapped manually, make sure the casing is correct
+									if(Array.isArray(this.options.attributes)) {
+										for(const attr of this.options.attributes) {
+											let consider = typeof attr === 'string' ? attr
+												: Array.isArray(attr) && attr.length === 2 && typeof attr[1] === 'string' ? attr[1]
+													: null;
+											if(consider && consider.toLowerCase() === rowKey.toLowerCase()) {
+												outKey = consider;
+												break;
+											}
+										}
+									}
+
+									if(!outKey) {
+										outKey = rowKey.toLowerCase();
+									}
 								}
 								const value = {};
 								if(outKey.indexOf('.') > -1) {
