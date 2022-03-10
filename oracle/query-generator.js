@@ -1249,7 +1249,7 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 			orders = this.getQueryOrders(options, model, isSubQuery);
 		}
 		if(options.limit || options.offset) {
-			if(!(options.order && options.group) && (!options.order || options.include && !orders.subQueryOrder.length)) {
+			if(!(options.order && options.group) && (options.include && !orders.subQueryOrder.length)) {
 				fragment += (options.order && !isSubQuery) ? ', ' : ' ORDER BY ';
 				fragment += this.quoteTable(options.tableAs || model.name) + '.' + this.quoteIdentifier(model.primaryKeyField);
 			}

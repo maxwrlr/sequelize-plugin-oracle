@@ -1,6 +1,6 @@
 import {install} from '..';
 import * as fs from 'fs';
-import {DataTypes, ModelStatic, Sequelize} from 'sequelize';
+import {col, DataTypes, fn, ModelStatic, Sequelize} from 'sequelize';
 
 install(true);
 
@@ -43,7 +43,7 @@ describe('create a table and make some queries', () => {
 		await expect(sequelize.sync({ force: true })).resolves.not.toThrow();
 	});
 
-	it('should insert a row', async() => {
+	it('insert a row', async() => {
 		const data = {
 			name: 'Hello World!',
 			bin:  Buffer.from('foo', 'utf8'),
@@ -59,7 +59,7 @@ describe('create a table and make some queries', () => {
 		expect(result).toContainEqual(expect.objectContaining(data));
 	});
 
-	it('should update a row', async() => {
+	it('updates a row', async() => {
 		const data = {
 			name:  'Thanks for escaping \', ' + String.fromCharCode(0) + ', " and `.',
 			value: 234,
@@ -73,7 +73,7 @@ describe('create a table and make some queries', () => {
 		expect(result).toContainEqual(expect.objectContaining(data));
 	});
 
-	it('should upsert a row', async() => {
+	it('upserts a row', async() => {
 		const data = {
 			name:  'Thanks for escaping \', ' + String.fromCharCode(0) + ', " and `.',
 			value: 567
@@ -84,7 +84,13 @@ describe('create a table and make some queries', () => {
 		expect(result).toContainEqual(expect.objectContaining(data));
 	});
 
-	it('should map aliases properly', async() => {
+	it('limits the select', async() => {
+		await Testing.create({ name: 'key', value: 123, bin: Buffer.from(''), date: new Date() });
+		const result = Testing.findOne({ attributes: [[fn('sum', col('value')), 'value']] });
+		await expect(result).resolves.toEqual(expect.objectContaining({ value: 567 + 123 }));
+	});
+
+	it('maps aliases properly', async() => {
 		const result = await sequelize.getQueryInterface().select(null, Testing.tableName, <any>{
 			attributes: [['value', 'camelCase']]
 		});
@@ -92,12 +98,12 @@ describe('create a table and make some queries', () => {
 		await expect(result[0]).toEqual({ camelCase: 567 });
 	});
 
-	it('should truncate the table', async() => {
+	it('truncates the table', async() => {
 		await Testing.destroy({ where: {}, truncate: true });
 		await expect(Testing.findAll()).resolves.toHaveLength(0);
 	});
 
-	it('should drop the table', async() => {
+	it('drops the table', async() => {
 		await Testing.drop();
 		await expect(Testing.findAll()).rejects.toThrow();
 	});
