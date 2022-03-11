@@ -42,7 +42,7 @@ class OracleQuery extends AbstractQuery {
 		}
 
 		// generate the object for Oracle out bindings; format -> $:name;type$
-		const bindPattern = /(RETURNING.*INTO[\s,:;$a-zA-Z(0-9)]*)(\$:([a-zA-Z_0-9]+);([ a-zA-Z(0-9)]+)\$)[\s,:a-zA-Z]*$/i;
+		const bindPattern = /(RETURNING.*INTO[\s,:;$_a-zA-Z(0-9)]*)(\$:([a-zA-Z_0-9]+);([ a-zA-Z(0-9)]+)\$)[\s,:a-zA-Z_0-9]*$/i;
 		for(let match; (match = bindPattern.exec(this.sql));) {
 			const parameterName = match[3] + (oracleReservedWords.includes(match[3].toUpperCase()) ? 'Out' : '');
 			const type = match[4];
