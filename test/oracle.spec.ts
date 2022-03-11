@@ -84,18 +84,18 @@ describe('create a table and make some queries', () => {
 		expect(result).toContainEqual(expect.objectContaining(data));
 	});
 
-	it('limits the select', async() => {
-		await Testing.create({ name: 'key', value: 123, bin: Buffer.from(''), date: new Date() });
-		const result = Testing.findOne({ attributes: [[fn('sum', col('value')), 'value']] });
-		await expect(result).resolves.toEqual(expect.objectContaining({ value: 567 + 123 }));
-	});
-
 	it('maps aliases properly', async() => {
 		const result = await sequelize.getQueryInterface().select(null, Testing.tableName, <any>{
 			attributes: [['value', 'camelCase']]
 		});
 
 		await expect(result[0]).toEqual({ camelCase: 567 });
+	});
+
+	it('limits the select', async() => {
+		await Testing.create({ name: 'key', value: 123, bin: Buffer.from(''), date: new Date() });
+		const result = Testing.findOne({ attributes: [[fn('sum', col('value')), 'value']] });
+		await expect(result).resolves.toEqual(expect.objectContaining({ value: 567 + 123 }));
 	});
 
 	it('truncates the table', async() => {

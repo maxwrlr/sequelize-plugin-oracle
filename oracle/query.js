@@ -5,6 +5,7 @@ const semver = require('semver');
 const sequelizeErrors = require('../../errors/index');
 const AbstractQuery = require('../abstract/query');
 const connectionManager = require('./connection-manager');
+const { oracleReservedWords } = require('./query-generator');
 const store = connectionManager.store;
 
 class OracleQuery extends AbstractQuery {
@@ -27,44 +28,48 @@ class OracleQuery extends AbstractQuery {
 		}
 		//We set the oracledb
 		const oracledb = self.sequelize.connectionManager.lib;
-		//Regexp for the bind params
-		const regex = new RegExp('([$][:][a-zA-Z_]+)[;]([a-zA-Z(0-9)[]+[$])');
+
 		//We remove the / that escapes quotes
 		if(sql.match(/^(SELECT|INSERT|DELETE)/)) {
 			this.sql = sql.replace(/; *$/, '');
 		} else {
 			this.sql = sql;
 		}
-		//Method to generate the object for Oracle out bindings; format -> $:name;type$
-		let regExResult = regex.exec(this.sql);
-		const outParameters = {};
-		while(regExResult !== null) {
-			//We extract the name of the parameter to bind, removes the $: at the beginning
-			const parameterName = regExResult[1].substring(2, regExResult[1].length);
-			//We extract the type, removes the $ at the end
-			const type = regExResult[2].substring(0, regExResult[2].length - 1);
+
+		this.outParameters = {};
+		if(this.options.bind && this.options.bind.hasOwnProperty('out') && this.options.bind.out && typeof this.options.bind.out === 'object') {
+			this.outParameters = this.options.bind.out;
+		}
+
+		// generate the object for Oracle out bindings; format -> $:name;type$
+		const bindPattern = /(RETURNING.*INTO[\s,:;$a-zA-Z(0-9)]*)(\$:([a-zA-Z_0-9]+);([ a-zA-Z(0-9)]+)\$)[\s,:a-zA-Z]*$/i;
+		for(let match; (match = bindPattern.exec(this.sql));) {
+			const parameterName = match[3] + (oracleReservedWords.includes(match[3].toUpperCase()) ? 'Out' : '');
+			const type = match[4];
 			//We bind the type passed as argument to the real type
 			switch(type) {
 				case 'INTEGER':
 				case 'NUMBER':
-					outParameters[parameterName] = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER };
+					this.outParameters[parameterName] = { dir: oracledb.BIND_OUT, type: oracledb.NUMBER };
+					break;
+				case 'TIMESTAMP WITH LOCAL TIME ZONE':
+					this.outParameters[parameterName] = {
+						dir: oracledb.BIND_OUT,
+						type: oracledb.DB_TYPE_TIMESTAMP_LTZ
+					};
 					break;
 				default:
 					//Default, we choose String
-					outParameters[parameterName] = { dir: oracledb.BIND_OUT, type: oracledb.STRING };
+					this.outParameters[parameterName] = { dir: oracledb.BIND_OUT, type: oracledb.STRING };
 					break;
 			}
-			//Finally we replace the param in the sql by the correct format for Oracle:  $:name;type$ -> :name
-			if(this.sql.indexOf(regExResult[0]) > -1 && this.sql.indexOf(`'${regExResult[0]}'`) > -1) {
-				//if the parameters is between quotes
-				this.sql = this.sql.replace('\'' + regExResult[0] + '\'', `:${parameterName}`);
-			} else {
-				this.sql = this.sql.replace(regExResult[0], `:${parameterName}`);
-			}
-			//We exec the regexp again to see if there are other parameters
-			regExResult = regex.exec(this.sql);
+
+			// replace the pattern with the actual oracle format
+			const startIndex = match.index + match[1].length;
+			const endIndex = startIndex + match[2].length;
+			this.sql = `${this.sql.substring(0, startIndex)}:${parameterName}${this.sql.substring(endIndex)}`;
 		}
-		this.outParameters = outParameters;
+
 		//do we need benchmark for this query execution
 		const benchmark = this.sequelize.options.benchmark || this.options.benchmark;
 		const logAliasesQry = this.sequelize.options.dialectOptions ? this.sequelize.options.dialectOptions.logAliasesQry : false;
@@ -93,7 +98,7 @@ class OracleQuery extends AbstractQuery {
 					self.autoCommit = true;
 				}
 			}
-			return connection.execute(self.sql, outParameters, { autoCommit: self.autoCommit })
+			return connection.execute(self.sql, this.outParameters, { autoCommit: self.autoCommit })
 				.then(() => {
 					return {};
 				})

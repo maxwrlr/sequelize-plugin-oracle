@@ -551,14 +551,18 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 			'FETCH findingRow INTO firstRow; ',
 			'IF findingRow%FOUND THEN ',
 			updateQuery,
-			'; $:isUpdate;NUMBER$ := 2; ',
+			'; :isUpdate := 2; ',
 			'ELSE ',
 			this.insertQuery(tableName, insertValues, modelAttributes, options),
-			'; $:isUpdate;NUMBER$ := 1; ',
+			'; :isUpdate := 1; ',
 			'END IF; ',
 			'CLOSE findingRow; ',
 			'END;'
 		];
+
+		bind.out = {
+			isUpdate: { dir: oracleDb.BIND_OUT, type: oracleDb.NUMBER }
+		};
 
 		return {
 			query: sql.join(''),
@@ -1285,4 +1289,4 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 }
 
 exports.OracleQueryGenerator = OracleQueryGenerator;
-//# sourceMappingURL=oracle-query-generator.js.map
+exports.oracleReservedWords = oracleReservedWords;
