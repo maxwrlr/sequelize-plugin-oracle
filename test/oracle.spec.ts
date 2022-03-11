@@ -6,6 +6,7 @@ install(true);
 
 let sequelize: Sequelize;
 let Testing: ModelStatic<any>;
+let Stat: ModelStatic<any>;
 
 jest.setTimeout(100_000);
 
@@ -34,13 +35,40 @@ beforeAll(() => {
 			type: DataTypes.BLOB
 		}
 	});
+
+	Stat = sequelize.define('stat', {
+		id:    {
+			type:       DataTypes.STRING,
+			primaryKey: true
+		},
+		time:  {
+			type:       DataTypes.DATE,
+			primaryKey: true
+		},
+		count: {
+			type: DataTypes.NUMBER
+		}
+	});
+
+	return sequelize.sync({ force: true });
 });
 
 afterAll(() => sequelize.close());
 
+it('creates and returns created row', async() => {
+	const data = {
+		id: 'test',
+		time: new Date(),
+		count: 23
+	};
+
+	const create = Stat.create(data);
+	await expect(create).resolves.toEqual(expect.objectContaining(create));
+});
+
 describe('create a table and make some queries', () => {
-	it('should create a table', async() => {
-		await expect(sequelize.sync({ force: true })).resolves.not.toThrow();
+	it('created a table', async() => {
+		await expect(Testing.findAll()).resolves.not.toThrow();
 	});
 
 	it('insert a row', async() => {
