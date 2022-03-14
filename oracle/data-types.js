@@ -316,9 +316,14 @@ module.exports = BaseTypes => {
 			return moment(value).format('YYYY-MM-DD');
 		}
 
+		constructor() {
+			super(...arguments);
+			this.escape = false;
+		}
+
 		_stringify(date) {
 			const format = 'YYYY/MM/DD';
-			return `TO_DATE('${date}','${format}')`;
+			return `TO_DATE('${moment(date).format(format)}','${format}')`;
 		}
 
 		_bindParam(value) {
