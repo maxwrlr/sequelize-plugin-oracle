@@ -1,14 +1,11 @@
-import {install} from '..';
 import * as fs from 'fs';
-import {col, DataTypes, fn, ModelStatic, Sequelize} from 'sequelize';
-
-install(true);
+import {col, DataTypes, fn, ModelStatic, Sequelize} from '..';
 
 let sequelize: Sequelize;
 let Testing: ModelStatic<any>;
 let Stat: ModelStatic<any>;
 
-jest.setTimeout(100_000);
+jest.setTimeout(10_000);
 
 beforeAll(() => {
 	sequelize = new Sequelize(
@@ -57,8 +54,8 @@ afterAll(() => sequelize.close());
 
 it('creates and returns created row', async() => {
 	const data = {
-		id: 'test',
-		time: new Date(),
+		id:    'test',
+		time:  new Date(),
 		count: 23
 	};
 

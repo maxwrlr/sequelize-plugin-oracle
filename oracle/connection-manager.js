@@ -1,7 +1,7 @@
 'use strict';
-const sequelizeErrors = require('../../errors/index');
-const AbstractConnectionManager = require('../abstract/connection-manager');
-const ParserStore = require('../parserStore');
+const sequelizeErrors = require('sequelize/lib/errors/index');
+const AbstractConnectionManager = require('sequelize/lib/dialects/abstract/connection-manager');
+const ParserStore = require('sequelize/lib/dialects/parserStore');
 exports.store = ParserStore('oracle');
 
 class OracleConnectionManager extends AbstractConnectionManager {
@@ -198,4 +198,3 @@ class OracleConnectionManager extends AbstractConnectionManager {
 }
 
 exports.OracleConnectionManager = OracleConnectionManager;
-//# sourceMappingURL=oracle-connection-manager.js.map

@@ -2,8 +2,8 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 const _ = require('lodash');
 const semver = require('semver');
-const sequelizeErrors = require('../../errors/index');
-const AbstractQuery = require('../abstract/query');
+const sequelizeErrors = require('sequelize/lib/errors/index');
+const AbstractQuery = require('sequelize/lib/dialects/abstract/query');
 const connectionManager = require('./connection-manager');
 const { oracleReservedWords } = require('./query-generator');
 const store = connectionManager.store;
@@ -124,7 +124,7 @@ class OracleQuery extends AbstractQuery {
 				}
 				return result.outBinds;
 			}).catch(error => {
-				//console.error(error.message);
+				console.error(sql);
 				throw self.formatError(error);
 			});
 		} else if(_.startsWith(self.sql, 'COMMIT TRANSACTION')) {
@@ -803,4 +803,3 @@ class OracleQuery extends AbstractQuery {
 }
 
 exports.OracleQuery = OracleQuery;
-//# sourceMappingURL=oracle-query.js.map

@@ -1,27 +1,27 @@
 'use strict';
 const _ = require('lodash');
-const AbstractDialect = require('../abstract');
-const oracle_connection_manager_1 = require('./connection-manager');
-const oracle_query_1 = require('./query');
-const oracle_query_generator_1 = require('./query-generator');
-const oracle_query_interface_1 = require('./query-interface');
-const DataTypes = require('../../data-types').oracle;
+const AbstractDialect = require('sequelize/lib/dialects/abstract/index');
+const { OracleConnectionManager } = require('./connection-manager');
+const { OracleQuery } = require('./query');
+const { OracleQueryGenerator } = require('./query-generator');
+const { OracleQueryInterface } = require('./query-interface');
+const DataTypes = require('sequelize/lib/data-types').oracle;
 const Globals = require('./globals');
 
 class OracleDialect extends AbstractDialect {
 	constructor(sequelize) {
 		super();
 		this.sequelize = sequelize;
-		this.connectionManager = new oracle_connection_manager_1.OracleConnectionManager(this, sequelize);
+		this.connectionManager = new OracleConnectionManager(this, sequelize);
 		this.connectionManager.initPools();
-		this.queryGenerator = new oracle_query_generator_1.OracleQueryGenerator({
+		this.queryGenerator = new OracleQueryGenerator({
 			options: sequelize.options,
 			_dialect: this,
 			sequelize
 		});
-		this.queryInterface = this.createQueryInterface();
+		this.queryInterface = new OracleQueryInterface(this.sequelize, this.queryGenerator);
 		this.connectionManager.defaultVersion = '12.1.0.2.0';
-		this.Query = oracle_query_1.OracleQuery;
+		this.Query = OracleQuery;
 		if(sequelize.options.dialectOptions) {
 			const noTimezone = sequelize.options.dialectOptions.noTimezone || false;
 			Globals.dialectOptions = {
@@ -63,11 +63,6 @@ class OracleDialect extends AbstractDialect {
 			'GEOMETRY': false
 		});
 	}
-
-	createQueryInterface() {
-		return new oracle_query_interface_1.OracleQueryInterface(this.sequelize, this.queryGenerator);
-	}
 }
 
 module.exports = OracleDialect;
-//# sourceMappingURL=oracle-dialect.js.map

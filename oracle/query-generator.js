@@ -6,8 +6,8 @@ const _ = require('lodash');
 const oracleDb = require('oracledb');
 const semver = require('semver');
 const uuid = require('uuid');
-const Utils = require('../../utils');
-const AbstractQueryGenerator = require('../abstract/query-generator');
+const Utils = require('sequelize/lib/utils');
+const AbstractQueryGenerator = require('sequelize/lib/dialects/abstract/query-generator');
 const { DataTypes } = require('sequelize');
 const crc32 = jscrc.crc32;
 //List of Oracle reserved words https://docs.oracle.com/cd/B19306_01/em.102/b40103/app_oracle_reserved_words.htm

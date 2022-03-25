@@ -1,86 +1,42 @@
-const fs = require('fs');
-const path = require('path');
-
-function paste(filepath, reference, fragment) {
-	// backup file for future updates on original file
-	const backupFile = filepath + '.original';
-	if(!fs.existsSync(backupFile)) {
-		fs.copyFileSync(filepath, backupFile);
-	}
-
-	let content = fs.readFileSync(backupFile, 'utf8');
-	const index = Array.isArray(reference)
-		? reference.reduce((i, r) => i >= 0 ? i : content.indexOf(r), -1)
-		: content.indexOf(reference);
-
-	if(index < 0) {
-		console.error('Failed to install oracle dialect.');
-		process.exit();
-		return;
-	}
-
-	content = content.substr(0, index) + fragment + content.substr(index);
-	fs.writeFileSync(filepath, content, 'utf8');
-}
-
-function installFiles(force) {
-	// make file amendments
-	const sequelizeDir = path.dirname(require.resolve('sequelize'));
-	const target = path.join(sequelizeDir, 'dialects/oracle');
-	const source = path.join(__dirname, 'oracle');
-
-	// always update if version of this package changed
-	let isUpToDate = false;
-	let sourceVersion;
-	try {
-		sourceVersion = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version;
-		const targetVersion = fs.readFileSync(path.join(target, '.version'), 'utf8');
-		isUpToDate = sourceVersion === targetVersion;
-	} catch(exc) {
-	}
-
-	if(force) {
-		// for testing
-		try {
-			require('fs-extra').removeSync(target);
-		} catch(exc) {
-		}
-	} else if(isUpToDate && fs.existsSync(target)) {
-		// don't copy if already copied
-		return;
-	}
-
-	// copy all files
-	if(!fs.existsSync(target)) {
-		fs.mkdirSync(target);
-	}
-	for(const filename of fs.readdirSync(source)) {
-		fs.copyFileSync(path.join(source, filename), path.join(target, filename));
-	}
-
-	// make sure oracle dialect wil be required
-	paste(
-		path.join(sequelizeDir, 'sequelize.js'),
-		['case \'mariadb\':', 'case "mariadb":'],
-		'case \'oracle\': Dialect = require(\'./dialects/oracle\'); break;\n'
-	);
-	paste(
-		path.join(sequelizeDir, 'data-types.js'),
-		'dialectMap.mariadb',
-		'dialectMap.oracle = require(\'./dialects/oracle/data-types\')(DataTypes);\n'
-	);
-
-	// commit
-	fs.writeFileSync(path.join(target, '.version'), sourceVersion, 'utf8');
-}
+const _ = require('lodash');
+const Module = require('module');
 
 /**
- * Make run-time adjustments. Unfortunately, that's not always easily possible.
+ * Make run-time adjustments to support Oracle.
+ * Especially due to data types, installation cannot be done more than once.
  */
-function installRuntime() {
-	// Install Oracle String escape
-	const SqlString = require('sequelize/lib/sql-string');
+function install() {
+	/**
+	 * install Oracle data types
+	 */
+	let oracleDataTypes;
+	const originalEach = _.each;
+	_.each = function(dataTypes) {
+		if(dataTypes && dataTypes.ABSTRACT && dataTypes.CITEXT && dataTypes.CITEXT.types) {
+			oracleDataTypes = require('./oracle/data-types')(dataTypes);
+			_.each = originalEach;
+		}
+		return originalEach.apply(this, arguments);
+	};
+
 	const dataTypes = require('sequelize/lib/data-types');
+	_.each(oracleDataTypes, (DataType, key) => {
+		if(!DataType.key) {
+			DataType.key = DataType.prototype.key = key;
+		}
+	});
+
+	const { classToInvokable } = require('sequelize/lib/utils/class-to-invokable');
+	_.each(oracleDataTypes, (DataType, key) => {
+		oracleDataTypes[key] = classToInvokable(DataType);
+	});
+
+	dataTypes.oracle = oracleDataTypes;
+
+	/**
+	 * install Oracle string escape
+	 */
+	const SqlString = require('sequelize/lib/sql-string');
 	const originalEscape = SqlString.escape;
 	SqlString.escape = function(val, timeZone, dialect, format) {
 		if(dialect === 'oracle') {
@@ -96,13 +52,41 @@ function installRuntime() {
 		}
 		return originalEscape(val, timeZone, dialect, format);
 	};
-}
 
-function install(force) {
-	installFiles(force);
-	installRuntime();
+	/**
+	 * install Oracle dialect loader inside Sequelize class
+	 */
+	const lib = require('sequelize/lib/sequelize');
+	lib.Sequelize = class Oracleize extends lib.Sequelize {
+		getDialect() {
+			const dialect = super.getDialect();
+			if(this.dialect || dialect !== 'oracle') {
+				return dialect;
+			}
+
+			// require oracledb instead of mariadb
+			if(typeof jest !== 'undefined') {
+				jest.mock('sequelize/lib/dialects/mariadb', () => {
+					jest.unmock('sequelize/lib/dialects/mariadb');
+					return require('./oracle');
+				});
+			} else {
+				let off = false;
+				const originalRequire = Module.prototype.require;
+				Module.prototype.require = function(id) {
+					if(!off && id === './dialects/mariadb') {
+						Module.prototype.require = originalRequire;
+						return require('./oracle');
+					}
+					return originalRequire.apply(this, arguments);
+				};
+			}
+
+			return 'mariadb';
+		}
+	};
 }
 
 install();
 
-module.exports.install = install;
+module.exports = require('sequelize');

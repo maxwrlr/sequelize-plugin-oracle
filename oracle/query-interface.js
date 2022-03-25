@@ -1,7 +1,7 @@
 'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
 const _ = require('lodash');
-const query_interface_1 = require('../abstract/query-interface');
+const query_interface_1 = require('sequelize/lib/dialects/abstract/query-interface');
 
 /**
  * Returns an object that treats Oracle's inabilities to do certain queries.
@@ -141,4 +141,3 @@ class OracleQueryInterface extends query_interface_1.QueryInterface {
 }
 
 exports.OracleQueryInterface = OracleQueryInterface;
-//# sourceMappingURL=oracle-query-interface.js.map
