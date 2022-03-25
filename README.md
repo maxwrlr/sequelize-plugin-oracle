@@ -12,7 +12,7 @@ pooling of [oracledb](https://github.com/oracle/node-oracledb).
 
 |sequelize-plugin-oracle|sequelize|
 |---|---|
-| 6.2 | \>= 6.16
+| \>= 6.2 | \>= 6.16
 | 6.1 | 6.14 to 6.15
 | 6.0 | 6.13
 
@@ -20,9 +20,6 @@ pooling of [oracledb](https://github.com/oracle/node-oracledb).
 
 This plugin requires `sequelize` and `oracledb` to be installed.
 They are not `peerDependencies` of this package, so the developer has to make sure it works together. 
-
-**Note:** _The major version of this plugin matches the major version of sequelize._
-In such cases, the plugin should definitely be compatible.
 
 ## Usage
 
@@ -32,10 +29,14 @@ import 'sequelize-plugin-oracle';
 // now you can use sequelize with oracle dbs.
 import {Sequelize} from 'sequelize';
 
+// or everything in one line
+// (sequelize-plugin-oracle exports sequelize)
+import {Sequelize} from 'sequelize-plugin-oracle';
+
 const sequelize = new Sequelize('oracle://...');
 ```
 
 ## How does it work?
 
-When required, it makes sure that the `dialects` directory of sequelize contains a copy of oracle definitions
-of this package. That's kinda hacky, but it seems to work 😅.
+When required, it overrides/wraps certain functions of sequelize to register the Oracle dialect.
+That's kinda hacky, but it seems to work 😅.
