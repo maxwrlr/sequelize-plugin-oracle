@@ -12,7 +12,7 @@
 		"typescript"
 	],
 	"scripts": {
-		"test": "./node_modules/.bin/jest"
+		"test": "./node_modules/.bin/jest && node test/without-jest.js"
 	},
 	"files": [
 		"index.js",
@@ -28,7 +28,7 @@
 		"fs-extra": "^10.0.0",
 		"jest": "^27.3.1",
 		"oracledb": "^5.3.0",
-		"sequelize": "6.17.0",
+		"sequelize": "6.19.0",
 		"ts-jest": "^27.0.7",
 		"typescript": "~4.4.4"
 	}
