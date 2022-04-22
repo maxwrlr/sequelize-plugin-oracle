@@ -71,10 +71,9 @@ function install() {
 					return require('./oracle');
 				});
 			} else {
-				let off = false;
 				const originalRequire = Module.prototype.require;
 				Module.prototype.require = function(id) {
-					if(!off && id === './dialects/mariadb') {
+					if(id === './dialects/mariadb') {
 						Module.prototype.require = originalRequire;
 						return require('./oracle');
 					}
