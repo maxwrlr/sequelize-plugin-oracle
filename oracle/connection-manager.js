@@ -88,14 +88,17 @@ class OracleConnectionManager extends AbstractConnectionManager {
 		exports.store.clear();
 	}
 
-	_onProcessExit() {
-		// copied from AbstractConnectionManager
+	async _onProcessExit() {
 		if(!this.pool) {
-			return Promise.resolve();
+			return;
+		}
+
+		if(this.pool instanceof Promise) {
+			await this.pool;
 		}
 
 		if(this.pool && this.pool.terminate) {
-			this.pool.terminate();
+			await this.pool.terminate();
 		}
 	}
 
