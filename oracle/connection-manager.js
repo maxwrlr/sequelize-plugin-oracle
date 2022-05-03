@@ -47,28 +47,22 @@ class OracleConnectionManager extends AbstractConnectionManager {
 	 * @hidden
 	 */
 	checkConfigObject(config) {
-		//A connectString should be defined
+		// A connectString should be defined
 		if(config.database.length === 0) {
 			let errorToThrow = 'The database cannot be blank, you must specify the database name (which correspond to the service name';
 			errorToThrow += '\n from tnsnames.ora : (HOST = mymachine.example.com)(PORT = 1521)(SERVICE_NAME = orcl)';
 			throw new Error(errorToThrow);
 		}
+
 		if(!config.host || config.host.length === 0) {
 			throw new Error('You have to specify the host');
 		}
-		//The connectString has a special format, we check it
-		//ConnectString format is : host:[port]/service_name
-		if(!config.dialectOptions || config.dialectOptions.validate !== false && config.database.indexOf('/') === -1) {
-			let connectString = config.host;
-			if(config.port && config.port !== 0) {
-				connectString += `:${config.port}`;
-			} else {
-				connectString += ':1521'; //Default port number
-			}
-			connectString += `/${config.database}`;
 
+		// The connectString has a special format, we check it
+		// ConnectString format is : host:[port]/service_name
+		if(!config.dialectOptions || config.dialectOptions.validate !== false && config.database.indexOf('/') === -1) {
 			config = Object.assign({}, config);
-			config.database = connectString;
+			config.database = `${config.host}:${config.port || 1521}/${config.database}`;
 		}
 
 		return config;
