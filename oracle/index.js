@@ -13,7 +13,6 @@ class OracleDialect extends AbstractDialect {
 		super();
 		this.sequelize = sequelize;
 		this.connectionManager = new OracleConnectionManager(this, sequelize);
-		this.connectionManager.initPools();
 		this.queryGenerator = new OracleQueryGenerator({
 			options: sequelize.options,
 			_dialect: this,
