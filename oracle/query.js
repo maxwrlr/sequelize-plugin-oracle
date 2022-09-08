@@ -493,7 +493,7 @@ class OracleQuery extends AbstractQuery {
 									}
 
 									if(!outKey) {
-										outKey = rowKey.toLowerCase();
+										outKey = _.camelCase(rowKey);
 									}
 								}
 								const value = {};
