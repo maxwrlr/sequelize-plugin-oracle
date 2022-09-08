@@ -97,6 +97,11 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 		return 'SELECT VERSION FROM PRODUCT_COMPONENT_VERSION WHERE PRODUCT LIKE \'Oracle%\'';
 	}
 
+	tableExistsQuery(table) {
+		const tableName = this.escape(this.quoteTable(table));
+		return `SELECT TABLE_NAME FROM ALL_TABLES WHERE TABLE_NAME = ${tableName} AND OWNER = ${this.escape(this.sequelize.config.username)}`;
+	}
+
 	/**
 	 * return a query to create a table
 	 */

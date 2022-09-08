@@ -52,6 +52,10 @@ beforeAll(() => {
 
 afterAll(() => sequelize.close());
 
+it('syncs using alter', async() => {
+	await expect(sequelize.sync({ alter: true })).resolves.not.toThrow();
+});
+
 it('creates and returns created row', async() => {
 	const data = {
 		id:    'test',
