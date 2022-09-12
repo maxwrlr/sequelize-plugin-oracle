@@ -29,7 +29,7 @@ class OracleQuery extends AbstractQuery {
 		}
 
 		// remove the statement-terminating semicolon
-		if(sql.match(/^\s*(SELECT|INSERT|UPDATE|DELETE)\s/i)) {
+		if(sql.match(/^\s*(WITH|SELECT|INSERT|UPDATE|DELETE)\s/i)) {
 			this.sql = sql.replace(/;\s*$/, '');
 		} else {
 			this.sql = sql;
