@@ -127,6 +127,16 @@ describe('create a table and make some queries', () => {
 		await expect(result).resolves.toEqual(expect.objectContaining({ value: 567 + 123 }));
 	});
 
+	it('ignores if statements are ended with semicolon', async() => {
+		const promises = Promise.all([
+			sequelize.query('select * from testings'),
+			sequelize.query('select * from testings;'),
+			sequelize.query('update testings set "value" = 100 where "value" > 100;')
+		]);
+
+		await expect(promises).resolves.not.toThrow();
+	});
+
 	it('truncates the table', async() => {
 		await Testing.destroy({ where: {}, truncate: true });
 		await expect(Testing.findAll()).resolves.toHaveLength(0);

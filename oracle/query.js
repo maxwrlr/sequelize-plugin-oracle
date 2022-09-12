@@ -23,15 +23,14 @@ class OracleQuery extends AbstractQuery {
 
 	_run(connection, sql, parameters) {
 		const self = this;
+		const oracledb = self.sequelize.connectionManager.lib;
 		if(parameters) {
 			//Nothing, just for eslint
 		}
-		//We set the oracledb
-		const oracledb = self.sequelize.connectionManager.lib;
 
-		//We remove the / that escapes quotes
-		if(sql.match(/^(SELECT|INSERT|DELETE)/)) {
-			this.sql = sql.replace(/; *$/, '');
+		// remove the statement-terminating semicolon
+		if(sql.match(/^\s*(SELECT|INSERT|UPDATE|DELETE)\s/i)) {
+			this.sql = sql.replace(/;\s*$/, '');
 		} else {
 			this.sql = sql;
 		}
