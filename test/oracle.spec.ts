@@ -50,7 +50,10 @@ beforeAll(() => {
 	return sequelize.sync({ force: true });
 });
 
-afterAll(() => sequelize.close());
+afterAll(async() => {
+	await Promise.all([Testing.drop(), Stat.drop()]);
+	await sequelize.close();
+});
 
 it('syncs using alter', async() => {
 	await expect(sequelize.sync({ alter: true })).resolves.not.toThrow();

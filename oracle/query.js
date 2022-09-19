@@ -750,7 +750,7 @@ class OracleQuery extends AbstractQuery {
 			//We create the object
 			if(!acc[indexRecord.INDEX_NAME]) {
 				acc[indexRecord.INDEX_NAME] = {
-					unique: indexRecord.UNIQUENESS === 'UNIQUE' ? true : false,
+					unique: indexRecord.UNIQUENESS === 'UNIQUE',
 					primary: (indexRecord.INDEX_NAME.toLowerCase().indexOf('pk') === 0),
 					name: indexRecord.INDEX_NAME.toLowerCase(),
 					tableName: indexRecord.TABLE_NAME.toLowerCase(),

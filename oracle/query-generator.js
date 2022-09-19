@@ -99,7 +99,10 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 
 	tableExistsQuery(table) {
 		const tableName = this.escape(this.quoteTable(table));
-		return `SELECT TABLE_NAME FROM ALL_TABLES WHERE TABLE_NAME = ${tableName} AND OWNER = ${this.escape(this.sequelize.config.username)}`;
+		return `SELECT TABLE_NAME
+                FROM ALL_TABLES
+                WHERE TABLE_NAME = ${tableName}
+                  AND OWNER = ${this.escape(this.sequelize.config.username)}`;
 	}
 
 	/**
@@ -177,35 +180,28 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 			}
 		});
 		values.attributes = attrStr.join(', ');
-		const pkString = primaryKeys.map((pk => {
-			return this.quoteIdentifier(pk);
-		}).bind(this)).join(', ');
-		if(pkString.length > 0) {
-			let primaryKeyName = `PK${values.table}${pkString}`.replace(/[.,"\s]/g, ''); //We replace the space if there are multiple columns
-			//Oracle doesn't support names with more that 32 characters, so we replace it by PK CRC32
-			if(primaryKeyName.length > 30) {
-				primaryKeyName = `PK${values.table}${crc32(pkString)}`.replace(/[.,"\s]/g, '');
-				if(primaryKeyName.length > 30) {
-					const crcName = crc32(`${values.table}_${pkString}`);
-					primaryKeyName = `PK${crcName}`.replace(/[.,"\s]/g, '');
-				}
-			}
-			values.attributes += ',CONSTRAINT ' + primaryKeyName + ' PRIMARY KEY (' + pkString + ')';
+
+		if(primaryKeys.length) {
+			// note: Oracle doesn't support names with more that 32 characters
+			const primaryKeyName = `PK_${values.table}`.substring(0, 32);
+			const primaryKeyColumns = primaryKeys.map(pk => this.quoteIdentifier(pk)).join(',');
+			values.attributes += `,CONSTRAINT ${primaryKeyName} PRIMARY KEY (${primaryKeyColumns})`;
 		}
-		//Dealing with FKs
+
+		// dealing with FKs
 		Object.keys(foreignKeys).forEach(fkey => {
 			//Oracle default response for FK, doesn't support if defined
 			if(foreignKeys[fkey].indexOf('ON DELETE NO ACTION') > -1) {
 				foreignKeys[fkey] = foreignKeys[fkey].replace('ON DELETE NO ACTION', '');
 			}
-			let fkName = `FK${values.table}${fkey}`.replace(/[."]/g, '');
+			let fkName = `FK_${values.table}_${fkey}`.replace(/[."]/g, '');
 			//Oracle doesn't support names with more that 32 characters, so we replace it by FK CRC(columns)
-			if(fkName.length > 30) {
-				fkName = `FK${values.table}${crc32(fkey)}`.replace(/[."]/g, '');
+			if(fkName.length > 32) {
+				fkName = `FK_${values.table}_${crc32(fkey)}`.replace(/[."]/g, '');
 				//If the name is still too long (table name very long), we generate only FK CRC(table_columns)
-				if(fkName.length > 30) {
+				if(fkName.length > 32) {
 					const crcName = crc32(`${values.table}_${fkey}`);
-					fkName = `FK${crcName}`.replace(/[."]/g, '');
+					fkName = `FK_${crcName}`.replace(/[."]/g, '');
 				}
 			}
 			values.attributes += ',CONSTRAINT ' + fkName + ' FOREIGN KEY (' + this.quoteIdentifier(fkey) + ') ' + foreignKeys[fkey];
