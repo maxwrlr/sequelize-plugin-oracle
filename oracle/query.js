@@ -725,7 +725,10 @@ class OracleQuery extends AbstractQuery {
 		if(match && match.length > 0) {
 			return new sequelizeErrors.UnknownConstraintError(match[1]);
 		}
-		return new sequelizeErrors.DatabaseError(err);
+
+		const error = new sequelizeErrors.DatabaseError(err);
+		error.sql = this.sql;
+		return error;
 	}
 
 	isShowIndexesQuery() {
