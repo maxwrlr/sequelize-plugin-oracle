@@ -2,7 +2,7 @@
 
 [![npm sequelize-plugin-oracle package](https://img.shields.io/npm/v/sequelize-plugin-oracle.svg)](https://npmjs.org/package/sequelize-plugin-oracle)
 
-This is plugin adds oracle support to an independent [sequelize](https://github.com/sequelize/sequelize) installation at
+This plugin adds oracle support to an independent [sequelize](https://github.com/sequelize/sequelize) installation at
 run time. The dialect is based on [ts-sequelize](https://github.com/konnecteam/ts-sequelize), but it uses the native
 pooling of [oracledb](https://github.com/oracle/node-oracledb).
 
