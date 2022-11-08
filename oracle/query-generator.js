@@ -8,7 +8,7 @@ const semver = require('semver');
 const uuid = require('uuid');
 const Utils = require('sequelize/lib/utils');
 const AbstractQueryGenerator = require('sequelize/lib/dialects/abstract/query-generator');
-const { DataTypes } = require('sequelize');
+const { Op, DataTypes } = require('sequelize');
 const crc32 = jscrc.crc32;
 //List of Oracle reserved words https://docs.oracle.com/cd/B19306_01/em.102/b40103/app_oracle_reserved_words.htm
 const oracleReservedWords = ['ACCESS', 'ACCOUNT', 'ACTIVATE', 'ADD', 'ADMIN', 'ADVISE', 'AFTER', 'ALL', 'ALL_ROWS', 'ALLOCATE', 'ALTER', 'ANALYZE', 'AND', 'ANY', 'ARCHIVE',
@@ -535,6 +535,11 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 	 * Using PL/SQL for finding the row
 	 */
 	upsertQuery(tableName, insertValues, updateValues, where, modelAttributes, options) {
+		if(_.isObject(where)) {
+			// literals should be matched by using the equals operation
+			where = _.mapValues(where, v => v instanceof Utils.SequelizeMethod ? { [Op.eq]: v } : v);
+		}
+
 		let {
 			query: updateQuery,
 			bind

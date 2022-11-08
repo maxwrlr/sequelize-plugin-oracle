@@ -70,6 +70,15 @@ it('creates and returns created row', async() => {
 	await expect(create).resolves.toEqual(expect.objectContaining(create));
 });
 
+it('upserts when a value is a literal', async() => {
+	const upsert = Stat.upsert({
+		id:    'test',
+		time:  Sequelize.literal('CURRENT_TIMESTAMP'),
+		count: 1
+	});
+	await expect(upsert).resolves.not.toThrow();
+});
+
 describe('create a table and make some queries', () => {
 	it('created a table', async() => {
 		await expect(Testing.findAll()).resolves.not.toThrow();
