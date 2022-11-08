@@ -58,7 +58,7 @@ class OracleQueryInterface extends query_interface_1.QueryInterface {
 		const constraintsSql = [];
 		//We start by searching if the primary key is an identity
 		const descriptionTableQuery = this.queryGenerator.isIdentityPrimaryKey(tableName);
-		return this.sequelize.query(descriptionTableQuery, options).spread(PKResult => {
+		return this.sequelize.query(descriptionTableQuery, options).then(PKResult => {
 			for(let i = 0; i < PKResult.length; i++) {
 				//We iterate through the primary keys to determine if we are working on it
 				if(PKResult[i].column_name === attributeName.toUpperCase()) {
@@ -73,7 +73,7 @@ class OracleQueryInterface extends query_interface_1.QueryInterface {
 			}
 			//This method return all constraints on a table with a given attribute
 			const findConstraintSql = this.queryGenerator.getConstraintsOnColumn(tableName, attributeName);
-			return this.sequelize.query(findConstraintSql, options).spread(results => {
+			return this.sequelize.query(findConstraintSql, options).then(([results]) => {
 				if(!results.length && constraintsSql.length === 0) {
 					// No default constraint found -- we can cleanly remove the column
 					return;

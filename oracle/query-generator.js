@@ -1150,7 +1150,7 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 	 * Request to know if the table has a identity primary key, returns the name of the declaration of the identity if true
 	 */
 	isIdentityPrimaryKey(tableName) {
-		return ['SELECT TABLE_NAME,COLUMN_NAME, COLUMN_NAME,GENERATION_TYPE,IDENTITY_OPTIONS FROM DBA_TAB_IDENTITY_COLS WHERE TABLE_NAME=\'',
+		return ['SELECT TABLE_NAME,COLUMN_NAME, COLUMN_NAME,GENERATION_TYPE,IDENTITY_OPTIONS FROM USER_TAB_IDENTITY_COLS WHERE TABLE_NAME=\'',
 			tableName.tableName ? tableName.tableName.toUpperCase() : tableName.toUpperCase(),
 			'\' ',
 			tableName.schema ? 'AND OWNER = \'' + this.getOwnerToGoodCase(tableName.schema) + '\' ' : ' '].join('');
