@@ -1,4 +1,6 @@
 const _ = require('lodash');
+const fs = require('fs');
+const path = require('path');
 const Module = require('module');
 
 /**
@@ -66,8 +68,12 @@ function install() {
 
 			// require oracledb instead of mariadb
 			if(typeof jest !== 'undefined') {
-				jest.mock('sequelize/lib/dialects/mariadb', () => {
-					jest.unmock('sequelize/lib/dialects/mariadb');
+				const prefix = fs.existsSync(path.resolve(__dirname, '../sequelize'))
+					? '../' // used for testing the surrounding app
+					: ''; // used for local testing
+				const moduleName = prefix + 'sequelize/lib/dialects/mariadb';
+				jest.mock(moduleName, () => {
+					jest.unmock(moduleName);
 					return require('./oracle');
 				});
 			} else {
