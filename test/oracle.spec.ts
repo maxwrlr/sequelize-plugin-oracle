@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import {col, DataTypes, fn, ModelStatic, Sequelize} from '..';
+import {QueryTypes} from 'sequelize';
 
 let sequelize: Sequelize;
 let Testing: ModelStatic<any>;
@@ -9,7 +10,12 @@ jest.setTimeout(10_000);
 
 beforeAll(() => {
 	sequelize = new Sequelize(
-		fs.readFileSync('.dbconfig', 'utf8').trim()
+		fs.readFileSync('.dbconfig', 'utf8').trim(),
+		{
+			define: {
+				underscored: true
+			}
+		}
 	);
 
 	Testing = sequelize.define('testing', {
@@ -131,6 +137,22 @@ describe('create a table and make some queries', () => {
 		});
 
 		await expect(result[0]).toEqual({ camelCase: 567 });
+	});
+
+	it('maps column keys properly for raw query with star', async() => {
+		const result = await sequelize.query('select * from ' + Testing.tableName, { type: QueryTypes.SELECT });
+		expect(result).toContainEqual(expect.objectContaining({
+			NAME:  expect.anything(),
+			IS_UP: expect.anything()
+		}));
+	});
+
+	it('maps column keys properly for raw query with aliases', async() => {
+		const result = await sequelize.query('select name as "The_namE", is_up as "isUp" from ' + Testing.tableName, { type: QueryTypes.SELECT });
+		expect(result).toContainEqual(expect.objectContaining({
+			The_namE: expect.anything(),
+			isUp:     expect.anything()
+		}));
 	});
 
 	it('limits the select', async() => {

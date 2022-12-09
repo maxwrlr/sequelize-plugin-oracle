@@ -469,32 +469,25 @@ class OracleQuery extends AbstractQuery {
 						rows.forEach(row => {
 							let returnObject = {};
 							rowKeys.forEach(rowKey => {
-								let outKey = '';
-								let mapKeys = [];
-								if(this.options && this.options.fieldMap) {
-									mapKeys = Object.keys(this.options.fieldMap);
-								}
+								let outKey = rowKey;
+								let mapKeys = this.options && this.options.fieldMap ? Object.keys(this.options.fieldMap) : [];
 								if(_.includes(mapKeys, rowKey.toLowerCase())) {
-									//We have a fieldMap for the names
+									// fieldMap for the names
 									outKey = this.options.fieldMap[rowKey.toLowerCase()];
-								} else {
+
+								} else if(Array.isArray(this.options.attributes)) {
 									// if value was mapped manually, make sure the casing is correct
-									if(Array.isArray(this.options.attributes)) {
-										for(const attr of this.options.attributes) {
-											let consider = typeof attr === 'string' ? attr
-												: Array.isArray(attr) && attr.length === 2 && typeof attr[1] === 'string' ? attr[1]
-													: null;
-											if(consider && consider.toLowerCase() === rowKey.toLowerCase()) {
-												outKey = consider;
-												break;
-											}
+									for(const attr of this.options.attributes) {
+										let consider = typeof attr === 'string' ? attr
+											: Array.isArray(attr) && attr.length === 2 && typeof attr[1] === 'string' ? attr[1]
+												: null;
+										if(consider && consider.toLowerCase() === rowKey.toLowerCase()) {
+											outKey = consider;
+											break;
 										}
 									}
-
-									if(!outKey) {
-										outKey = _.camelCase(rowKey);
-									}
 								}
+
 								const value = {};
 								if(outKey.indexOf('.') > -1) {
 									//If there are dots in the key, we create an object
