@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import {DataTypes, ModelStatic, Sequelize} from '..';
-import {QueryInterface} from 'sequelize';
+import {QueryInterface, STRING} from 'sequelize';
 
 let sequelize: Sequelize;
 let qi: QueryInterface;
@@ -33,6 +33,15 @@ afterAll(async() => {
 	await Testing.drop();
 	await sequelize.close();
 });
+
+it('adds a column', async() => {
+	const getColumns = async() => Object.keys(await qi.describeTable(Testing.tableName)).map(k => k.toLowerCase());
+
+	await expect(getColumns()).resolves.not.toContain('test');
+	await qi.addColumn(Testing.tableName, 'test', { type: STRING(32) });
+	await expect(getColumns()).resolves.toContain('test');
+});
+
 
 it('removes a column', async() => {
 	const getColumns = async() => Object.keys(await qi.describeTable(Testing.tableName)).map(k => k.toLowerCase());
