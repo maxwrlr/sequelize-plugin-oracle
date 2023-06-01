@@ -5,6 +5,7 @@ import {QueryTypes} from 'sequelize';
 let sequelize: Sequelize;
 let Testing: ModelStatic<any>;
 let Stat: ModelStatic<any>;
+let Sites: ModelStatic<any>;
 
 jest.setTimeout(10_000);
 
@@ -53,12 +54,28 @@ beforeAll(() => {
 		}
 	});
 
+	Sites = sequelize.define('numbers', {
+		id:   {
+			type:       DataTypes.STRING,
+			primaryKey: true
+		},
+		path: {
+			type:   DataTypes.STRING,
+			unique: true
+		}
+	});
+
 	return sequelize.sync({ force: true });
 });
 
 afterAll(async() => {
 	await Promise.all([Testing.drop(), Stat.drop()]);
 	await sequelize.close();
+});
+
+it('supports unique', async() => {
+	await expect(Sites.create({ id: 1, path: '/' })).resolves.not.toThrow();
+	await expect(Sites.create({ id: 2, path: '/' })).rejects.toThrow();
 });
 
 it('syncs using alter', async() => {

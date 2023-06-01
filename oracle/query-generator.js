@@ -111,7 +111,6 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 	createTableQuery(tableName, attributes, options) {
 		let query = 'CREATE TABLE <%= table %> (<%= attributes %>)';
 		const completeQuery = 'BEGIN EXECUTE IMMEDIATE \'<%= createTableQuery %>\'; EXCEPTION WHEN OTHERS THEN IF SQLCODE != -955 THEN RAISE; END IF; END;';
-		const self = this;
 		const primaryKeys = [];
 		const foreignKeys = {};
 		const attrStr = [];
@@ -312,7 +311,9 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 					indexName = indexName.replace(/[.,\s]/g, '');
 					columns.name = indexName;
 					options.uniqueKeys[indexName] = index;
-					values.attributes += ', CONSTRAINT ' + indexName + ' UNIQUE (' + _.map(columns.fields, self.quoteIdentifier).join(', ') + ')';
+					values.attributes += ', CONSTRAINT ' + indexName + ' UNIQUE ('
+						+ columns.fields.map(s => this.quoteIdentifier(s)).join(', ')
+						+ ')';
 				}
 			});
 		}
@@ -1031,9 +1032,6 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 	 * Delete ` from identifier and put it under ""
 	 */
 	quoteIdentifier(identifier, force) {
-		if(identifier === '*') {
-			return identifier;
-		}
 		if(force === true) {
 			return Utils.addTicks(identifier, '"');
 		} else if(identifier.indexOf('.') > -1 || identifier.indexOf('->') > -1) {
