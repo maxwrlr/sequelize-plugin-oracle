@@ -6,7 +6,7 @@ This plugin adds oracle support to an independent [sequelize](https://github.com
 run time. The dialect is based on [ts-sequelize](https://github.com/konnecteam/ts-sequelize), but it uses the native
 pooling of [oracledb](https://github.com/oracle/node-oracledb).
 
-> ✅ Tested with sequelize@6.21.3 
+> ✅ Tested with sequelize@6.31.1 
 
 ## Compatibility
 
