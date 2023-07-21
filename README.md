@@ -1,6 +1,6 @@
-> **Deprecated**
+> ⚠️ **Deprecated** ⚠️
 > 
-> Since `sequelize@6.2.0`, Oracle is now supported officially.
+> Since `sequelize@6.22.0`, Oracle is now supported officially.
 
 # sequelize-plugin-oracle
 
