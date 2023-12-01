@@ -178,11 +178,11 @@ class OracleQuery extends AbstractQuery {
 					} else if(!Array.isArray(result.outBinds)) {
 						result = [result.outBinds];
 					}
-					const formatedResult = self.formatResults(result);
+					const formattedResult = self.formatResults(result);
 					if(this.isUpsertQuery()) {
-						return formatedResult;
+						return formattedResult;
 					}
-					return [formatedResult];
+					return [formattedResult];
 				}).catch(error => {
 					// console.error(error.message);
 					throw self.formatError(error);
@@ -222,8 +222,11 @@ class OracleQuery extends AbstractQuery {
 						//Replacing aliases by real names
 						result = this._replaceLongAliases(opts.tableAliases, result);
 					}
-					const formatedResult = self.formatResults(result);
-					return formatedResult === undefined ? {} : formatedResult;
+					const formattedResult = self.formatResults(result);
+					if(this.isInsertQuery(result)) {
+						return [formattedResult];
+					}
+					return formattedResult === undefined ? {} : formattedResult;
 				}).catch(error => {
 					throw self.formatError(error);
 				});
