@@ -35,6 +35,10 @@ beforeAll(() => {
 		date:  {
 			type: DataTypes.DATE
 		},
+		text:  {
+			field: 'column_for_text',
+			type:  DataTypes.TEXT
+		},
 		bin:   {
 			type: DataTypes.BLOB
 		}
@@ -111,6 +115,7 @@ describe('create a table and make some queries', () => {
 		const data = {
 			name: 'Hello World!',
 			bin:  Buffer.from('foo', 'utf8'),
+			text: Array(5000).fill('a').join(''),
 			date: new Date()
 		};
 
@@ -129,6 +134,7 @@ describe('create a table and make some queries', () => {
 			value: 234,
 			isUp:  true,
 			date:  new Date(),
+			text:  Array(5000).fill('b').join(''),
 			bin:   Buffer.from('bar', 'utf8')
 		};
 

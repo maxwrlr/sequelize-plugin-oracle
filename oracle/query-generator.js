@@ -531,6 +531,25 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 		});
 	}
 
+	updateQuery(tableName, updateValues, where, options, modelAttributes) {
+		// Ensure string literal limit when updating TEXT.
+		if(_.isObject(updateValues)) {
+			for(const attr of Object.values(modelAttributes)) {
+				if(!updateValues.hasOwnProperty(attr.field) || attr.type.key !== DataTypes.TEXT.key) {
+					continue;
+				}
+
+				const text = updateValues[attr.field];
+				const chunks = _.chunk(text, 4000).map(t => t.join(''));
+				updateValues[attr.field] = this.sequelize.literal(
+					chunks.map(c => `to_clob(${this.sequelize.escape(c)})`).join('||')
+				)
+			}
+		}
+
+		return super.updateQuery(tableName, updateValues, where, options, modelAttributes);
+	}
+
 	/**
 	 * Override of upsertQuery, Oracle specific
 	 * Using PL/SQL for finding the row
@@ -647,9 +666,9 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 						val: value
 					};
 					//Binding type to parameter
-					if(modelAttributes[key].type.key === DataTypes.TEXT.key) {
+					if(currAttribute.type.key === DataTypes.TEXT.key) {
 						//if text with length, it's generated as a String inside Oracle,
-						if(modelAttributes[key].type._length !== '') {
+						if(currAttribute.type._length !== '') {
 							inputParam['type'] = oracleDb.STRING;
 						} else {
 							//No length -> it's a CLOB
