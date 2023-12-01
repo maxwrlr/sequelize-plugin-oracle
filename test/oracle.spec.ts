@@ -4,6 +4,7 @@ import {QueryTypes} from 'sequelize';
 
 let sequelize: Sequelize;
 let Testing: ModelStatic<any>;
+let TestingChild: ModelStatic<any>;
 let Stat: ModelStatic<any>;
 let Sites: ModelStatic<any>;
 
@@ -44,6 +45,20 @@ beforeAll(() => {
 		}
 	});
 
+	TestingChild = sequelize.define('testing_child', {
+		parent: {
+			type:       DataTypes.STRING,
+			references: {
+				model: Testing,
+				key:   'name'
+			}
+		},
+		name:   {
+			type:       DataTypes.STRING,
+			primaryKey: true
+		}
+	});
+
 	Stat = sequelize.define('stat', {
 		id:    {
 			type:       DataTypes.STRING,
@@ -73,7 +88,7 @@ beforeAll(() => {
 });
 
 afterAll(async() => {
-	await Promise.all([Testing.drop(), Stat.drop()]);
+	await Promise.all([Testing.drop(), TestingChild.drop(), Stat.drop(), Sites.drop()]);
 	await sequelize.close();
 });
 
@@ -104,6 +119,20 @@ it('upserts when a value is a literal', async() => {
 		count: 1
 	});
 	await expect(upsert).resolves.not.toThrow();
+});
+
+it('gets foreign key constraints in correct format', async() => {
+	const fks = await sequelize.getQueryInterface()
+		.getForeignKeyReferencesForTable(TestingChild.tableName) as any[];
+
+	expect(fks).toEqual([
+		expect.objectContaining({
+			tableName:            TestingChild.tableName.toUpperCase(),
+			columnName:           TestingChild.getAttributes()['parent'].field.toUpperCase(),
+			referencedTableName:  Testing.tableName.toUpperCase(),
+			referencedColumnName: Testing.getAttributes()['name'].field.toUpperCase()
+		})
+	]);
 });
 
 describe('create a table and make some queries', () => {

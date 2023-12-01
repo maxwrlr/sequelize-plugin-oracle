@@ -543,7 +543,7 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 				const chunks = _.chunk(text, 4000).map(t => t.join(''));
 				updateValues[attr.field] = this.sequelize.literal(
 					chunks.map(c => `to_clob(${this.sequelize.escape(c)})`).join('||')
-				)
+				);
 			}
 		}
 
@@ -1076,17 +1076,22 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 		return sql;
 	}
 
-	/**
-	 * Generates an SQL query that returns all foreign keys details of a table.
-	 */
 	getForeignKeysQuery(table) {
 		//We don't call quoteTable as we don't want the schema in the table name, Oracle seperates it on another field
 		const tableName = table.tableName || table;
-		const sql = ['select table_name,constraint_name, owner from all_constraints where constraint_type in (\'U\', \'R\') and table_name = \'',
-			tableName.toUpperCase(),
-			'\'',
-			table.schema ? ' and owner = \'' + this.getOwnerToGoodCase(table.schema) + '\'' : '',
-			' order by table_name, constraint_name'].join('');
+		const sql = [
+			'SELECT DISTINCT  a.table_name "tableName", a.constraint_name "constraintName", a.owner "owner",  a.column_name "columnName",',
+			' b.table_name "referencedTableName", b.column_name "referencedColumnName"',
+			' FROM all_cons_columns a',
+			' JOIN all_constraints c ON a.owner = c.owner AND a.constraint_name = c.constraint_name',
+			' JOIN all_cons_columns b ON c.owner = b.owner AND c.r_constraint_name = b.constraint_name',
+			' WHERE c.constraint_type  = \'R\'',
+			' AND a.table_name = ',
+			this.escape(tableName.toUpperCase()),
+			' AND a.owner = ',
+			table.schema ? `'${this.getOwnerToGoodCase(table.schema)}'` : 'USER',
+			' ORDER BY a.table_name, a.constraint_name'
+		].join('');
 		return sql;
 	}
 
