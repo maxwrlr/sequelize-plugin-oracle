@@ -69,6 +69,18 @@ it('gets foreign key constraints in correct format', async() => {
 	]);
 });
 
+it('performs bulk operations without model', async() => {
+	await qi.bulkInsert(Testing.tableName, [{ name: 'Foo', value: null }]);
+
+	let affectedRows = await qi.bulkUpdate(Testing.tableName, { value: 2 }, { name: 'Foo' });
+	expect(affectedRows).toBe(1);
+
+	affectedRows = await qi.bulkUpdate(Testing.tableName, { value: null }, { name: 'Foo' });
+	expect(affectedRows).toBe(1);
+
+	await qi.bulkDelete(Testing.tableName, { name: 'Foo' });
+});
+
 it('adds a column', async() => {
 	const getColumns = async() => Object.keys(await qi.describeTable(Testing.tableName)).map(k => k.toLowerCase());
 
@@ -77,20 +89,10 @@ it('adds a column', async() => {
 	await expect(getColumns()).resolves.toContain('test');
 });
 
-
 it('removes a column', async() => {
 	const getColumns = async() => Object.keys(await qi.describeTable(Testing.tableName)).map(k => k.toLowerCase());
 
 	await expect(getColumns()).resolves.toContain('value');
 	await qi.removeColumn(Testing.tableName, 'value');
 	await expect(getColumns()).resolves.not.toContain('value');
-});
-
-it('performs bulk operations without model', async() => {
-	await qi.bulkInsert(Testing.tableName, [{ name: 'Foo', value: 1 }]);
-
-	let affectedRows = await qi.bulkUpdate(Testing.tableName, { value: 2 }, { name: 'Foo' });
-	expect(affectedRows).toBe(1);
-
-	await qi.bulkDelete(Testing.tableName, { name: 'Foo' });
 });

@@ -760,14 +760,14 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 		_.forEach(attrValueHashes, attrValueHash => {
 			// special case for empty objects with primary keys
 			const fields = Object.keys(attrValueHash);
-			if(fields.length === 1 && attributes[fields[0]].autoIncrement && attrValueHash[fields[0]] === null) {
+			if(fields.length === 1 && attributes && attributes[fields[0]].autoIncrement && attrValueHash[fields[0]] === null) {
 				allQueries.push(emptyQuery);
 				return;
 			}
 			// normal case
 			_.forOwn(attrValueHash, (value, key) => {
 				if(allAttributes.indexOf(key) === -1) {
-					if(value === null && attributes[key].autoIncrement) {
+					if(value === null && attributes && attributes[key].autoIncrement) {
 						return;
 					}
 					allAttributes.push(key);
