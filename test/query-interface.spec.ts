@@ -5,12 +5,18 @@ import {QueryInterface, STRING} from 'sequelize';
 let sequelize: Sequelize;
 let qi: QueryInterface;
 let Testing: ModelStatic<any>;
+let TestingChild: ModelStatic<any>;
 
 jest.setTimeout(10_000);
 
 beforeAll(() => {
 	sequelize = new Sequelize(
-		fs.readFileSync('.dbconfig', 'utf8').trim()
+		fs.readFileSync('.dbconfig', 'utf8').trim(),
+		{
+			define: {
+				timestamps: false
+			}
+		}
 	);
 
 	qi = sequelize.getQueryInterface();
@@ -26,12 +32,41 @@ beforeAll(() => {
 		}
 	});
 
+	TestingChild = sequelize.define('testing_child', {
+		parent: {
+			type:       DataTypes.STRING,
+			references: {
+				model: Testing,
+				key:   'name'
+			}
+		},
+		name:   {
+			type:       DataTypes.STRING,
+			primaryKey: true
+		}
+	});
+
 	return sequelize.sync({ force: true });
 });
 
 afterAll(async() => {
+	await TestingChild.drop();
 	await Testing.drop();
 	await sequelize.close();
+});
+
+it('gets foreign key constraints in correct format', async() => {
+	const fks = await sequelize.getQueryInterface()
+		.getForeignKeyReferencesForTable(TestingChild.tableName) as any[];
+
+	expect(fks).toEqual([
+		expect.objectContaining({
+			tableName:            TestingChild.tableName.toUpperCase(),
+			columnName:           TestingChild.getAttributes()['parent'].field.toUpperCase(),
+			referencedTableName:  Testing.tableName.toUpperCase(),
+			referencedColumnName: Testing.getAttributes()['name'].field.toUpperCase()
+		})
+	]);
 });
 
 it('adds a column', async() => {
@@ -49,4 +84,13 @@ it('removes a column', async() => {
 	await expect(getColumns()).resolves.toContain('value');
 	await qi.removeColumn(Testing.tableName, 'value');
 	await expect(getColumns()).resolves.not.toContain('value');
+});
+
+it('performs bulk operations without model', async() => {
+	await qi.bulkInsert(Testing.tableName, [{ name: 'Foo', value: 1 }]);
+
+	let affectedRows = await qi.bulkUpdate(Testing.tableName, { value: 2 }, { name: 'Foo' });
+	expect(affectedRows).toBe(1);
+
+	await qi.bulkDelete(Testing.tableName, { name: 'Foo' });
 });

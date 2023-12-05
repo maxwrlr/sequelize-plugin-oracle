@@ -533,7 +533,7 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 
 	updateQuery(tableName, updateValues, where, options, modelAttributes) {
 		// Ensure string literal limit when updating TEXT.
-		if(_.isObject(updateValues)) {
+		if(_.isObject(updateValues) && _.isObject(modelAttributes)) {
 			for(const attr of Object.values(modelAttributes)) {
 				if(!updateValues.hasOwnProperty(attr.field) || attr.type.key !== DataTypes.TEXT.key) {
 					continue;
