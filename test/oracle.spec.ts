@@ -115,7 +115,7 @@ describe('create a table and make some queries', () => {
 		const data = {
 			name: 'Hello World!',
 			bin:  Buffer.from('foo', 'utf8'),
-			text: Array(5000).fill('a').join(''),
+			text: Array(5000).fill('ä').join(''),
 			date: new Date()
 		};
 
@@ -140,7 +140,7 @@ describe('create a table and make some queries', () => {
 			value: 234,
 			isUp:  true,
 			date:  new Date(),
-			text:  Array(5000).fill('b').join(''),
+			text:  Array(5000).fill('ö').join(''),
 			bin:   Buffer.from('bar', 'utf8')
 		};
 

@@ -42,6 +42,35 @@ const oracleReservedWords = ['ACCESS', 'ACCOUNT', 'ACTIVATE', 'ADD', 'ADMIN', 'A
 	'UPDATABLE', 'UPDATE', 'USAGE', 'USE', 'USER', 'USING', 'VALIDATE', 'VALIDATION', 'VALUE', 'VALUES', 'VARCHAR', 'VARCHAR2', 'VARYING', 'VIEW', 'WHEN', 'WHENEVER', 'WHERE', 'WITH', 'WITHOUT',
 	'WORK', 'WRITE', 'WRITEDOWN', 'WRITEUP', 'XID', 'YEAR', 'ZONE'];
 
+/**
+ * Split a unicode string into chunks of the given size.
+ */
+function splitLongString(str, chunkSize = 4000) {
+	if(str.length <= chunkSize) {
+		return [str];
+	}
+
+	const textEncoder = new TextEncoder();
+
+	// Create chunks based on byte size of characters.
+	const chunks = [''];
+	for(const char of str) {
+		const j = chunks.length - 1;
+		if(textEncoder.encode(chunks[j] + char).length <= chunkSize) {
+			chunks[j] += char;
+		} else {
+			chunks.push(char);
+		}
+	}
+
+	return chunks;
+}
+
+function concatLongStringFromClobs(sequelize, str) {
+	const chunks = splitLongString(str);
+	return chunks.map(c => `to_clob(${sequelize.escape(c)})`).join('||');
+}
+
 class OracleQueryGenerator extends AbstractQueryGenerator {
 	constructor(options) {
 		super(options);
@@ -539,10 +568,8 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 					continue;
 				}
 
-				const text = updateValues[attr.field];
-				const chunks = _.chunk(text, 4000).map(t => t.join(''));
 				updateValues[attr.field] = this.sequelize.literal(
-					chunks.map(c => `to_clob(${this.sequelize.escape(c)})`).join('||')
+					concatLongStringFromClobs(this.sequelize, updateValues[attr.field])
 				);
 			}
 		}
@@ -658,28 +685,24 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 					value = ' ';
 				}
 				const currAttribute = modelAttributeMap[key];
-				if(currAttribute && currAttribute.type != null && (currAttribute.type.key === DataTypes.TEXT.key || currAttribute.type.key === DataTypes.BLOB.key)) {
-					//If we try to insert into TEXT or BLOB, we need to pass by input-parameters to avoid the 4000 char length limit
+				if(currAttribute && currAttribute.type != null && currAttribute.type.key === DataTypes.TEXT.key && typeof value === 'string') {
+					values.push(concatLongStringFromClobs(this.sequelize, value));
+				} else if(currAttribute && currAttribute.type != null && currAttribute.type.key === DataTypes.BLOB.key) {
+					// If we try to insert into TEXT or BLOB, we need to pass by input-parameters to avoid the 4000 char length limit
 					const paramName = `:input${key}${inputParamCpt}`;
 					const inputParam = {
 						// dir : oracleDb.BIND_IN,
 						val: value
 					};
-					//Binding type to parameter
+					// Binding type to parameter
 					if(currAttribute.type.key === DataTypes.TEXT.key) {
-						//if text with length, it's generated as a String inside Oracle,
-						if(currAttribute.type._length !== '') {
-							inputParam['type'] = oracleDb.STRING;
-						} else {
-							//No length -> it's a CLOB
-							inputParam['type'] = oracleDb.STRING;
-						}
+						inputParam['type'] = oracleDb.STRING;
 					} else {
-						//No TEXT, it's a BLOB
+						// No TEXT, it's a BLOB
 						// inputParam['type'] =  oracleDb.BLOB;
 						inputParam['val'] = Buffer.from(inputParam['val']);
 					}
-					inputParameters[paramName.slice(1, paramName.length)] = inputParam;
+					inputParameters[paramName.slice(1)] = inputParam;
 					values.push(paramName);
 				} else {
 					// return this.escape(value) + ' AS "' + key + '"';
