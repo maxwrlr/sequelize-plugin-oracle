@@ -115,7 +115,7 @@ describe('create a table and make some queries', () => {
 		const data = {
 			name: 'Hello World!',
 			bin:  Buffer.from('foo', 'utf8'),
-			text: Array(5000).fill('ä').join(''),
+			text: '123'.padStart(5000, 'ä'),
 			date: new Date()
 		};
 
@@ -140,7 +140,7 @@ describe('create a table and make some queries', () => {
 			value: 234,
 			isUp:  true,
 			date:  new Date(),
-			text:  Array(5000).fill('ö').join(''),
+			text:  '123'.padStart(5000, 'ö'),
 			bin:   Buffer.from('bar', 'utf8')
 		};
 
@@ -152,7 +152,8 @@ describe('create a table and make some queries', () => {
 	it('upserts a row', async() => {
 		const data = {
 			name:  'Thanks for escaping \', ' + String.fromCharCode(0) + ', " and `.',
-			value: 567
+			value: 567,
+			text:  '123'.padStart(5000, 'ü'),
 		};
 
 		await Testing.upsert(data);

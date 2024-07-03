@@ -562,14 +562,22 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 
 	updateQuery(tableName, updateValues, where, options, modelAttributes) {
 		// Ensure string literal limit when updating TEXT.
-		if(_.isObject(updateValues) && _.isObject(modelAttributes)) {
-			for(const attr of Object.values(modelAttributes)) {
-				if(!updateValues.hasOwnProperty(attr.field) || attr.type.key !== DataTypes.TEXT.key) {
+		if(updateValues && typeof updateValues === 'object') {
+			const textEncoder = new TextEncoder();
+			for(const [key, value] of Object.entries(updateValues)) {
+				if(typeof value !== 'string' || textEncoder.encode(value).length <= 4000) {
 					continue;
 				}
 
-				updateValues[attr.field] = this.sequelize.literal(
-					concatLongStringFromClobs(this.sequelize, updateValues[attr.field])
+				if(modelAttributes) {
+					const attr = modelAttributes[key] || Object.values(modelAttributes).find(a => a.field === key);
+					if(attr && attr.type.key !== DataTypes.TEXT.key) {
+						continue;
+					}
+				}
+
+				updateValues[key] = this.sequelize.literal(
+					concatLongStringFromClobs(this.sequelize, value)
 				);
 			}
 		}
