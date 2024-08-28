@@ -1,6 +1,6 @@
-import * as fs from 'fs';
 import {DataTypes, ModelStatic, Sequelize} from '..';
 import {QueryInterface, STRING} from 'sequelize';
+import {createSequelize} from "./utils";
 
 let sequelize: Sequelize;
 let qi: QueryInterface;
@@ -10,14 +10,9 @@ let TestingChild: ModelStatic<any>;
 jest.setTimeout(10_000);
 
 beforeAll(() => {
-	sequelize = new Sequelize(
-		fs.readFileSync('.dbconfig', 'utf8').trim(),
-		{
-			define: {
-				timestamps: false
-			}
-		}
-	);
+	sequelize = createSequelize({
+		timestamps: false
+	});
 
 	qi = sequelize.getQueryInterface();
 

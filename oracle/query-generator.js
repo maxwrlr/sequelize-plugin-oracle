@@ -77,6 +77,10 @@ class OracleQueryGenerator extends AbstractQueryGenerator {
 		this.dialect = 'oracle';
 	}
 
+	getAliasToken() {
+		return '';
+	}
+
 	throwMethodUndefined(methodName) {
 		throw new Error('The method "' + methodName + '" is not defined! Please add it to your sql dialect.');
 	}

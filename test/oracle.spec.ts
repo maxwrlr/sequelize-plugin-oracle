@@ -1,6 +1,5 @@
-import * as fs from 'fs';
-import {col, DataTypes, fn, ModelStatic, Sequelize} from '..';
-import {QueryTypes} from 'sequelize';
+import {col, DataTypes, fn, ModelStatic, Sequelize, QueryTypes} from '..';
+import {createSequelize} from "./utils";
 
 let sequelize: Sequelize;
 let Testing: ModelStatic<any>;
@@ -10,14 +9,7 @@ let Sites: ModelStatic<any>;
 jest.setTimeout(10_000);
 
 beforeAll(() => {
-	sequelize = new Sequelize(
-		fs.readFileSync('.dbconfig', 'utf8').trim(),
-		{
-			define: {
-				underscored: true
-			}
-		}
-	);
+	sequelize = createSequelize();
 
 	Testing = sequelize.define('testing', {
 		name:  {
